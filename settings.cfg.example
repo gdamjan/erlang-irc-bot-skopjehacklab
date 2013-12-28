@@ -1,0 +1,36 @@
+{connection, [
+    {name, {local, freenode}},
+    {nickname, "CHANGE ME"},
+    {server,   {"chat.freenode.net", 6667}},
+    {channels, [
+        "#lugola",
+        "#razmjenavjestina",
+        "#nsnd",
+        "#labos",
+        "#hklbgd",
+        "#ubuntu-mk",
+        "#it.com.mk",
+        "#manganacija",
+        "#luvit",
+        "#devbin",
+        "#drupal-balkan"
+    ]},
+    {plugins, [
+        {'ircbot_plugin_uptime', []},
+        {'ircbot_plugin_nickserv', ["SEKRET"]},
+        {'ircbot_plugin_rps', []},
+        {'ircbot_plugin_tell', []},
+        {'ircbot_plugin_title', []},
+        {'ircbot_plugin_couch_log', [<<"irclog">>, [{basic_auth, {<<"irclog">>, <<"ANOTHER SEKRET">>}}]]},
+        {'ircbot_plugin_viewer', []},
+        {'ircbot_plugin_google', []},
+        {'ircbot_plugin_autojoin', []},
+        {'ircbot_plugin_roll', []},
+        {'ircbot_plugin_ping', []},
+        {'ircbot_plugin_help', []},
+        {'ircbot_plugin_prisutni', []},
+        {'ircbot_plugin_kluc', []},
+        {'ircbot_plugin_seen', []},
+        {'ircbot_plugin_hacklab_status', []}
+    ]}
+]}.
