@@ -1,0 +1,19 @@
+{application, ircbot_skopjehacklab,
+ [{description, "IrcBot for the Skopje Hacklab"},
+  {vsn, "1.0.0"},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel,
+                  stdlib,
+                  asn1,
+                  crypto,
+                  public_key,
+                  ssl,
+                  mimetypes,
+                  hackney_lib,
+                  hackney]},
+  {env, []}
+ ]
+}.
+
+
