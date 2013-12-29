@@ -11,7 +11,7 @@
 %% Configuration (settings.cfg):
 %% {plugins, [
 %%     ...
-%%    {'plugins.couch_log', [Host, Port, Prefix, DbName, Options]}
+%%    {ircbot_plugin_couch_log, [Url, DbName, Options]}
 %% ]}.
 %%
 %% You can also specify DbName only, or DbName and Options
@@ -24,15 +24,12 @@ init([DbName]) ->
     init([DbName, []]);
 
 init([DbName, Options]) ->
-    init(["127.0.0.1", 5984, "", DbName, Options]);
+    init([<<"http://localhost:5984">>, DbName, Options]);
 
-init([Host, Port, Prefix, DbName, Options]) ->
-    application:start(sasl),
-    application:start(crypto),
-    application:start(ibrowse),
-    application:start(couchbeam),
-    Server = couchbeam:server_connection(Host, Port, Prefix, Options),
-    {ok, Db} = couchbeam:open_db(Server, DbName),
+init([Url, DbName, Options]) ->
+    couchbeam:start(),
+    Server = couchbeam:server_connection(Url, Options),
+    {ok, Db} = couchbeam:open_db(Server, DbName, []),
     {ok, Db}.
 
 
