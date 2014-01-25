@@ -16,10 +16,10 @@ init(_Args) ->
 
 handle_event(Msg, State) ->
     case Msg of
-        % explicit command to fetch hacklab status from Cosm
-        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!blink">>]} ->
+        % explicit command to make an api call for the RGB
+        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#lugola">>, <<"!blink">>]} ->
             Url = <<"http://hacklab.ot.mk:5000/api/blink">>,
-            F = fun(Answer) -> Ref:privmsg(Channel, Answer) end,
+            F = fun(Answer) -> Ref:notice(_Nick, Answer) end,
             spawn(fun() -> fetcher(Url, F) end),
             {ok, State};
        _ ->
