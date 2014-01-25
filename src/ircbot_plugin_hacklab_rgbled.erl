@@ -39,7 +39,6 @@ fetcher(Url, Callback) ->
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>}],
     Options = [{recv_timeout, 10000}, {follow_redirect, true}],
     {ok, StatusCode, _RespHeaders, Ref} = hackney:request(get, Url, Headers, <<>>, Options),
-    {ok, Body} = hackney:body(Ref, ?MAXBODY),
     case StatusCode of
         200 ->
             Callback(<<"Трепкав.">>);
