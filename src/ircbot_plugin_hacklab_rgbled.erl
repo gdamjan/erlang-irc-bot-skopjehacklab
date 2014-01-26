@@ -17,9 +17,9 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         % explicit command to make an api call for the RGB
-        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#lugola">>, <<"!алохаклаб">>]} ->
+        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#lugola">>, <<"!алохаклаб">>]} ->
             Url = <<"http://hacklab.ot.mk:5000/api/blink">>,
-            F = fun(Answer) -> Ref:notice(_Nick, Answer) end,
+            F = fun(Answer) -> Ref:notice(Nick, Answer) end,
             spawn(fun() -> fetcher(Url, F) end),
             {ok, State};
        _ ->
