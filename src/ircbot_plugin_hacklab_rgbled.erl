@@ -42,6 +42,8 @@ fetcher(Url, Callback) ->
     case StatusCode of
         200 ->
             Callback(<<"Трепкав.">>);
+        403 ->
+            Callback(<<"Хаклабот е затворен, не може да трепкам.">>);
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
             Callback(<<"{error ", N/binary, "}">>)
