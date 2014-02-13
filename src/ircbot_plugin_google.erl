@@ -28,10 +28,12 @@ terminate(_Args, _State) -> ok.
 
 
 fetch(Query, Ref, Channel) ->
-    Callback = fun(Msg) -> Ref:privmsg(Channel, Msg) end,
-    spawn(fun() -> gfl(Query, Callback) end).
+    spawn(fun() ->
+          Response = gfl(Query),
+          Ref:privmsg(Channel, Response)
+    end).
 
-gfl(Query, Callback) ->
+gfl(Query) ->
     Q = hackney_url:urlencode(Query),
     Url = <<"http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=", Q/binary>>,
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>}],
@@ -40,11 +42,11 @@ gfl(Query, Callback) ->
     case StatusCode of
         302 ->
             LuckyResult =  hackney_headers:get_value(<<"location">>, hackney_headers:new(RespHeaders)),
-            Callback(LuckyResult),
-            hackney:close(Ref);
+            hackney:close(Ref),
+            LuckyResult;
         200 ->
-            Callback(["No match, see: ", Url]),
-            hackney:close(Ref);
+            hackney:close(Ref),
+            ["No match, see: ", Url];
         _ ->
             ok
     end.

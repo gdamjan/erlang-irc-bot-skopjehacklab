@@ -65,10 +65,12 @@ fetch_last(State, Ref, Channel) ->
 %% The function gets spawned as a separate process, and fails silently on any
 %% error.
 fetch(Url, Ref, Channel) ->
-    F = fun(Title) -> Ref:privmsg(Channel, Title) end,
-    spawn(fun() -> fetcher(Url, F) end).
+    spawn(fun() ->
+        Response = fetcher(Url),
+        Ref:privmsg(Channel, Response)
+    end).
 
-fetcher(Url, Callback) ->
+fetcher(Url) ->
     Url1 = sanitize_url(Url),
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>}],
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
@@ -77,15 +79,14 @@ fetcher(Url, Callback) ->
         200 ->
             <<"text/", _/binary>> = hackney_headers:get_value(<<"content-type">>, hackney_headers:new(RespHeaders)),
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
+            hackney:close(Ref),
             Tree = mochiweb_html:parse(Body),
             [{_, _, Title}|_] = mochiweb_xpath:execute("//title",Tree),
-            Title1 = re:replace(Title, "\\s+", " ", [global]),
-            Callback(Title1),
-            hackney:close(Ref);
+            _Title = re:replace(Title, "\\s+", " ", [global]);
         _ ->
+            hackney:close(Ref),
             N = list_to_binary(integer_to_list(StatusCode)),
-            Callback(<<"{error ", N/binary, "}">>),
-            hackney:close(Ref)
+            <<"{error ", N/binary, "}">>
     end.
 
 

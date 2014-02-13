@@ -19,10 +19,12 @@ handle_event(Msg, State) ->
         % explicit command to make an api call for the RGB
         {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#lugola">>, <<"!алохаклаб">>]} ->
             Url = <<"http://hacklab.ot.mk:5000/api/blink">>,
-            F = fun(Answer) -> Ref:notice(Nick, Answer) end,
-            spawn(fun() -> fetcher(Url, F) end),
+            spawn(fun() ->
+                Answer = fetcher(Url),
+                Ref:notice(Nick, Answer)
+            end),
             {ok, State};
-       _ ->
+        _ ->
             {ok, State}
     end.
 
@@ -35,17 +37,17 @@ terminate(_Args, _State) -> ok.
 
 %% The function gets spawned as a separate process,
 %% and fails silently on many errors.
-fetcher(Url, Callback) ->
+fetcher(Url) ->
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>}],
     Options = [{recv_timeout, 10000}, {follow_redirect, true}],
     {ok, StatusCode, _RespHeaders, Ref} = hackney:request(get, Url, Headers, <<>>, Options),
+    hackney:close(Ref),
     case StatusCode of
         200 ->
-            Callback(<<"Трепкав.">>);
+            <<"Трепкав.">>;
         403 ->
-            Callback(<<"Хаклабот е затворен, не може да трепкам.">>);
+            <<"Хаклабот е затворен, не може да трепкам.">>;
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
-            Callback(<<"{error ", N/binary, "}">>)
-    end,
-    hackney:close(Ref).
+            <<"{error ", N/binary, "}">>
+    end.
