@@ -83,7 +83,7 @@ get_prisutni() ->
     end.
 
 get_status() ->
-    Url = <<"https://api.cosm.com/v2/feeds/86779/datastreams/hacklab_status.json">>,
+    Url = <<"https://api.xively.com/v2/feeds/86779/datastreams/hacklab_status.json">>,
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>},
                 {<<"X-ApiKey">>,<<"vqElqXeb7Lu6ZwDElnKQ8XpGMG-SAKxxMHV3YWFoeHE4OD0g">>}],
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
