@@ -29,7 +29,7 @@
         {'ircbot_plugin_ping', []},
         {'ircbot_plugin_help', []},
         {'ircbot_plugin_prisutni', []},
-        {'ircbot_plugin_kluc', []},
+        {'ircbot_plugin_kluc', [<<"ircbot">>, [{basic_auth, {<<"ircbot">>, <<"SEKRETS ALL THE TIEM">>}}]]},
         {'ircbot_plugin_seen', []},
         {'ircbot_plugin_hacklab_status', []}
     ]}

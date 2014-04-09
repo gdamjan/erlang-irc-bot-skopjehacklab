@@ -4,53 +4,40 @@
 -behaviour(gen_event).
 -export([init/1, handle_event/2, terminate/2, handle_call/2, handle_info/2, code_change/3]).
 
+init([DbName]) ->
+    init([DbName, []]);
 
-init(_Args) ->
-    {ok, sets:new()}.
+init([DbName, Options]) ->
+    init([<<"http://localhost:5984">>, DbName, Options]);
+
+init([Url, DbName, Options]) ->
+    couchbeam:start(),
+    Server = couchbeam:server_connection(Url, Options),
+    {ok, _Db} = couchbeam:open_db(Server, DbName, []).
 
 
-handle_event(Msg, State) ->
+handle_event(Msg, Db) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви">>]} ->
-            Text = sets:fold(fun (E, AccIn) -> <<AccIn/binary, " ", E/binary>> end, <<"Клучеви имаат:">>, State),
-            Ref:privmsg(Channel, Text),
-            {ok, State};
-        {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клуч +", Rest/binary>>]} ->
-            Ref:notice(Channel, <<Rest/binary, " додаден(а)">>),
-            {ok, sets:add_element(Rest, State)};
-        {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клуч -", Rest/binary>>]} ->
-            Ref:notice(Channel, <<Rest/binary, " отстранет(а)">>),
-            {ok, sets:del_element(Rest, State)};
-        {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви ", Rest/binary>>]} ->
-            {NewSet, Response} = process_changes(Rest, State),
-            Ref:notice(Channel, Response),
-            {ok, NewSet};
+            {ok, ViewResults} = get_latest_state(Db),
+            Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, output_view_results(ViewResults)]),
+            {ok, Db};
         _ ->
-            {ok, State}
+            {ok, Db}
     end.
 
+output_view_results(ViewResults) ->
+    [{Row} | _] = ViewResults,
+    {Value} = proplists:get_value(<<"value">>, Row),
+    << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- Value >>.
 
-process_changes(Line, Set) ->
-    List = binary:split(Line, <<" ">>, [global, trim]),
-    process_list(List, Set, []).
-
-process_list([], Set, Text) ->
-    {Set, Text};
-
-process_list([Head|Tail], Set, Text) ->
-    case Head of
-        <<"+", Rest/binary>> ->
-            NewSet = sets:add_element(Rest, Set),
-            NewText = <<Rest/binary, " додаден ">>,
-            process_list(Tail, NewSet, [Text|NewText]);
-        <<"-", Rest/binary>> ->
-            NewSet = sets:del_element(Rest, Set),
-            NewText = <<Rest/binary, " отстранет ">>,
-            process_list(Tail, NewSet, [Text|NewText]);
-        _ ->
-            process_list(Tail, Set, Text)
-    end.
-
+get_latest_state(Db) ->
+    Options = [ { limit, 1 }, descending,
+                { startkey, [<<"клучеви">>, [{}] ]},
+                { endkey,   [<<"клучеви">>,    0 ]} ],
+    DesignName = "ircbot",
+    ViewName = "by_timestamp",
+    couchbeam_view:fetch(Db, {DesignName, ViewName}, Options).
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.
