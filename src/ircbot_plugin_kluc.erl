@@ -4,6 +4,22 @@
 -behaviour(gen_event).
 -export([init/1, handle_event/2, terminate/2, handle_call/2, handle_info/2, code_change/3]).
 
+% The plugin saves data to CouchDB
+% the database will need a view like this:
+% {
+%   "_id" : "_design/ircbot",
+%   "language" : "javascript",
+%   "views" : {
+%      "by_timestamp" : {
+%        "map" : "function(doc) {
+%           if (doc.timestamp && doc.type) {
+%              emit([doc.type, doc.timestamp], doc.keys);
+%            }
+%         }"
+%      }
+%   }
+% }
+%
 init([DbName]) ->
     init([DbName, []]);
 
@@ -19,25 +35,29 @@ init([Url, DbName, Options]) ->
 handle_event(Msg, Db) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви">>]} ->
-            ViewValue = get_latest_state(Db),
-            Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- ViewValue >>,
-            Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, Response]),
+            spawn(fun () ->
+                ViewValue = get_latest_state(Db),
+                Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- ViewValue >>,
+                Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, Response])
+            end),
             {ok, Db};
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви ", Rest/binary>>]} ->
-            ViewValue = get_latest_state(Db),
-            NewValue = process_changes(Rest, ViewValue),
-            {MegaSecs, Secs, MicroSecs} = now(),
-            Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
-            Doc =  {[
-                 {<<"timestamp">>,  Timestamp},
-                 {<<"sender">>, Sender},
-                 {<<"channel">>, Channel},
-                 {<<"type">>, <<"клучеви">>},
-                 {<<"keys">>, NewValue}
-            ]},
-            catch couchbeam:save_doc(Db, Doc),
-            Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- NewValue >>,
-            Ref:notice(Channel, Response),
+            spawn(fun () ->
+                ViewValue = get_latest_state(Db),
+                NewValue = process_changes(Rest, ViewValue),
+                {MegaSecs, Secs, MicroSecs} = now(),
+                Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
+                Doc =  {[
+                     {<<"timestamp">>,  Timestamp},
+                     {<<"sender">>, Sender},
+                     {<<"channel">>, Channel},
+                     {<<"type">>, <<"клучеви">>},
+                     {<<"keys">>, NewValue}
+                ]},
+                couchbeam:save_doc(Db, Doc),
+                Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- NewValue >>,
+                Ref:notice(Channel, Response)
+            end),
             {ok, Db};
         _ ->
             {ok, Db}
