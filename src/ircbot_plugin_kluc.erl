@@ -19,17 +19,29 @@ init([Url, DbName, Options]) ->
 handle_event(Msg, Db) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви">>]} ->
-            {ok, ViewResults} = get_latest_state(Db),
-            Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, output_view_results(ViewResults)]),
+            ViewValue = get_latest_state(Db),
+            Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- ViewValue >>,
+            Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, Response]),
+            {ok, Db};
+        {in, Ref, [Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви ", Rest/binary>>]} ->
+            ViewValue = get_latest_state(Db),
+            NewValue = process_changes(Rest, ViewValue),
+            {MegaSecs, Secs, MicroSecs} = now(),
+            Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
+            Doc =  {[
+                 {<<"timestamp">>,  Timestamp},
+                 {<<"sender">>, Sender},
+                 {<<"channel">>, Channel},
+                 {<<"type">>, <<"клучеви">>},
+                 {<<"keys">>, NewValue}
+            ]},
+            catch couchbeam:save_doc(Db, Doc),
+            Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- NewValue >>,
+            Ref:notice(Channel, Response),
             {ok, Db};
         _ ->
             {ok, Db}
     end.
-
-output_view_results(ViewResults) ->
-    [{Row} | _] = ViewResults,
-    {Value} = proplists:get_value(<<"value">>, Row),
-    << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- Value >>.
 
 get_latest_state(Db) ->
     Options = [ { limit, 1 }, descending,
@@ -37,7 +49,21 @@ get_latest_state(Db) ->
                 { endkey,   [<<"клучеви">>,    0 ]} ],
     DesignName = "ircbot",
     ViewName = "by_timestamp",
-    couchbeam_view:fetch(Db, {DesignName, ViewName}, Options).
+    {ok, ViewResults} = couchbeam_view:fetch(Db, {DesignName, ViewName}, Options),
+    [{Row} | _] = ViewResults,
+    {Value} = proplists:get_value(<<"value">>, Row),
+    Value.
+
+process_changes(Line, OldState) ->
+    {match, Match} = re:run(Line, "([+-])(.+?)\\((.+?)\\)", [global, {capture, all_but_first, binary}]),
+    lists:foldr(fun([Op, Person, Key], AccIn) ->
+          case Op of
+            <<"+">>  ->
+                [{Key, Person}|proplists:delete(Key, AccIn)];
+            <<"-">>  ->
+                proplists:delete(Key, AccIn)
+          end
+        end, OldState, Match).
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.
