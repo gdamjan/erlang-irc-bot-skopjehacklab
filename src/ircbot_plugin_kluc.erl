@@ -12,7 +12,7 @@
 %   "views" : {
 %      "by_timestamp" : {
 %        "map" : "function(doc) {
-%           if (doc.timestamp && doc.type) {
+%           if (doc.type && doc.timestamp && doc.keys) {
 %              emit([doc.type, doc.timestamp], doc.keys);
 %            }
 %         }"
