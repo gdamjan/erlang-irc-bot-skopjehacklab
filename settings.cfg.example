@@ -19,7 +19,6 @@
         {'ircbot_plugin_uptime', []},
         {'ircbot_plugin_nickserv', ["SEKRET"]},
         {'ircbot_plugin_rps', []},
-        {'ircbot_plugin_tell', []},
         {'ircbot_plugin_title', []},
         {'ircbot_plugin_couch_log', [<<"irclog">>, [{basic_auth, {<<"irclog">>, <<"ANOTHER SEKRET">>}}]]},
         {'ircbot_plugin_viewer', []},
@@ -30,6 +29,7 @@
         {'ircbot_plugin_help', []},
         {'ircbot_plugin_prisutni', []},
         {'ircbot_plugin_kluc', [<<"ircbot">>, [{basic_auth, {<<"ircbot">>, <<"SEKRETS ALL THE TIEM">>}}]]},
+        {'ircbot_plugin_tell', [<<"ircbot">>, [{basic_auth, {<<"ircbot">>, <<"SEKRETS ALL THE TIEM">>}}]]},
         {'ircbot_plugin_seen', []},
         {'ircbot_plugin_hacklab_status', []}
     ]}

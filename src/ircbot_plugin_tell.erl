@@ -4,14 +4,29 @@
 -behaviour(gen_event).
 -export([init/1, handle_event/2, terminate/2, handle_call/2, handle_info/2, code_change/3]).
 
+% by_recipient:
+%     map:
+%         function(doc) {
+%           if (doc.type && doc.recipient) {
+%             emit([doc.type, doc.recipient], null);
+%           }
+%         }
 
-init(_Args) ->
-    {ok, dict:new()}.
+init([DbName]) ->
+        init([DbName, []]);
 
+init([DbName, Options]) ->
+        init([<<"http://localhost:5984">>, DbName, Options]);
 
-fancy_time({Mega,Sec,_Micro}) ->
-    {NowMega,NowSec,_NowMicro} = erlang:now(),
-    DeltaMinutes = (NowMega*1000000 - Mega*1000000 + NowSec - Sec) div 60,
+init([Url, DbName, Options]) ->
+        couchbeam:start(),
+        Server = couchbeam:server_connection(Url, Options),
+        {ok, _Db} = couchbeam:open_db(Server, DbName, []).
+
+fancy_time(Timestamp) ->
+    {NowMega, NowSec,_NowMicro} = erlang:now(),
+    NowTimestamp = NowMega * 1000000 + NowSec,
+    DeltaMinutes = (NowTimestamp - trunc(Timestamp)) div 60,
     if
         DeltaMinutes < 2 ->
             "just a minute ago";
@@ -23,43 +38,71 @@ fancy_time({Mega,Sec,_Micro}) ->
             integer_to_list(DeltaMinutes div (60 * 24)) ++ " days ago"
     end.
 
-remember(Ref, Channel, Sender, Msg, State) ->
-    Timestamp = erlang:now(),
+remember(Channel, Sender, Msg, Db) ->
+    {MegaSecs, Secs, MicroSecs} = now(),
+    Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
     [Recepient | Message] = re:split(Msg, "[^a-zA-Z0-9^|_{}[\\]\\\\`-]", [{parts,2}]),
-    Ref:notice(Sender, <<"ok, I'll  pass that on when ", Recepient/binary, " is around.">>),
-    Key = string:to_lower(binary_to_list(Recepient)),
-    {ok, dict:append(Key, {Timestamp, Channel, Sender, Message}, State)}.
+    Key = list_to_binary(string:to_lower(binary_to_list(Recepient))),
+    Doc =  {[
+       {<<"timestamp">>,  Timestamp},
+       {<<"sender">>, Sender},
+       {<<"channel">>, Channel},
+       {<<"message">>, Message},
+       {<<"recipient">>, Key},
+       {<<"type">>, <<"tell">>}
+    ]},
+    couchbeam:save_doc(Db, Doc),
+    <<"ok, I'll  pass that on when ", Recepient/binary, " is around.">>.
 
-reminder(Ref, Nick, State) ->
-    Key = string:to_lower(binary_to_list(Nick)),
-    case dict:is_key(Key, State) of
-        true ->
-            L = dict:fetch(Key, State),
-            lists:foreach(fun ({Timestamp, Channel, From, Message}) ->
-                Msg =  [fancy_time(Timestamp), " ", From, " on ", Channel, ": ", Message],
-                Ref:privmsg(Nick, Msg) end, L),
-            {ok, dict:erase(Key, State)};
-        false ->
-            {ok, State}
-    end.
+reminder(Ref, Nick, Db) ->
+    Key = list_to_binary(string:to_lower(binary_to_list(Nick))),
+    Options = [ { startkey, [<<"tell">>, Key ]},
+                { endkey,   [<<"tell">>, Key ]} ],
+    DesignName = "ircbot",
+    ViewName = "by_recipient",
+    {ok, ViewResults} = couchbeam_view:fetch(Db, {DesignName, ViewName}, Options),
+    lists:foreach(fun ({Row}) ->
+                    Id = proplists:get_value(<<"id">>, Row),
+                    {ok, Doc} = couchbeam:open_doc(Db, Id),
+                    From = couchbeam_doc:get_value(<<"sender">>, Doc),
+                    Channel = couchbeam_doc:get_value(<<"channel">>, Doc),
+                    Msg = couchbeam_doc:get_value(<<"message">>, Doc),
+                    Timestamp = couchbeam_doc:get_value(<<"timestamp">>, Doc),
+                    Response = [fancy_time(Timestamp), " ", From, " on ", Channel, ": ", Msg],
+                    Ref:privmsg(Nick, Response),
+                    couchbeam:delete_doc(Db, Doc)
+                  end, ViewResults).
 
-handle_event(Msg, State) ->
+
+handle_event(Msg, Db) ->
     case Msg of
-        {in, Ref, [Sender, _Name, <<"JOIN">>, <<"#",_Channel/binary>>]} ->
-            reminder(Ref, Sender, State);
-        {in, Ref, [_Sender, _Name, <<"NICK">>, Nick]} ->
-            reminder(Ref, Nick, State);
-
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!tell ",Rest/binary>>]} ->
-            remember(Ref, Channel, Sender, Rest, State);
+            spawn(fun() ->
+                          Response = remember(Channel, Sender, Rest, Db),
+                          Ref:notice(Sender, Response)
+                  end);
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!ask ",Rest/binary>>]} ->
-            remember(Ref, Channel, Sender, Rest, State);
+            spawn(fun() ->
+                          Response = remember(Channel, Sender, Rest, Db),
+                          Ref:notice(Sender, Response)
+                  end);
 
+        {in, Ref, [Sender, _Name, <<"JOIN">>, <<"#",_Channel/binary>>]} ->
+            spawn(fun() ->
+                          reminder(Ref, Sender, Db)
+                  end);
+        {in, Ref, [_Sender, _Name, <<"NICK">>, Nick]} ->
+            spawn(fun() ->
+                          reminder(Ref, Nick, Db)
+                  end);
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",_Channel/binary>>, _Something]} ->
-            reminder(Ref, Sender, State);
+            spawn(fun() ->
+                          reminder(Ref, Sender, Db)
+                  end);
         _ ->
-            {ok, State}
-    end.
+            ok
+    end,
+    {ok, Db}.
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.
