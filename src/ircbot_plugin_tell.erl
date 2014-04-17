@@ -79,7 +79,7 @@ handle_event(Msg, Db) ->
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!tell ",Rest/binary>>]} ->
             spawn(fun() ->
                           Response = remember(Channel, Sender, Rest, Db),
-                          Ref:notice(Sender, Response)
+                          Ref:privmsg(Sender, Response)
                   end);
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!ask ",Rest/binary>>]} ->
             spawn(fun() ->
