@@ -56,8 +56,7 @@ remember(Channel, Sender, Msg, Db) ->
 
 reminder(Ref, Nick, Db) ->
     Key = list_to_binary(string:to_lower(binary_to_list(Nick))),
-    Options = [ { startkey, [<<"tell">>, Key ]},
-                { endkey,   [<<"tell">>, Key ]} ],
+    Options = [ { key, [<<"tell">>, Key ]} ],
     DesignName = "ircbot",
     ViewName = "by_recipient",
     {ok, ViewResults} = couchbeam_view:fetch(Db, {DesignName, ViewName}, Options),
@@ -84,7 +83,7 @@ handle_event(Msg, Db) ->
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!ask ",Rest/binary>>]} ->
             spawn(fun() ->
                           Response = remember(Channel, Sender, Rest, Db),
-                          Ref:notice(Sender, Response)
+                          Ref:privmsg(Sender, Response)
                   end);
 
         {in, Ref, [Sender, _Name, <<"JOIN">>, <<"#",_Channel/binary>>]} ->
