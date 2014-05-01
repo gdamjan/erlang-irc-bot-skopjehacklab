@@ -30,8 +30,7 @@ handle_event(Msg, State) ->
 
 doit(IrcBot, Channel) ->
     Collector = spawn(fun() ->
-        Responses = wait_for_responses([], 2),
-        Response = << <<T/binary, " ">> || T <- Responses >>,
+        Response = wait_for_responses([], 2),
         IrcBot:privmsg(Channel, Response)
     end),
     spawn(fun() ->
@@ -47,9 +46,9 @@ wait_for_responses(Responses, 0) ->
 wait_for_responses(Responses, Needed) ->
     receive
         {prisutni, Text} ->
-            wait_for_responses([Text | Responses], Needed - 1);
+            wait_for_responses([Text, " " | Responses], Needed - 1);
         {status, Text} ->
-            wait_for_responses([Text | Responses], Needed - 1)
+            wait_for_responses([Text, " " | Responses], Needed - 1)
     after
         5000 ->
             wait_for_responses([<<"some timeout">> | Responses], 0)
@@ -68,7 +67,7 @@ get_prisutni() ->
             {Json} = couchbeam_ejson:decode(Body),
             [{Counter}|_] = proplists:get_value(<<"counters">>, Json),
             Count = proplists:get_value(<<"count">>, Counter),
-            CountS = integer_to_list(Count),
+            CountS = list_to_binary(integer_to_list(Count)),
             People = proplists:get_value(<<"present">>, Json),
 
             case {Count, People} of
