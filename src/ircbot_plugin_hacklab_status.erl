@@ -20,6 +20,9 @@ handle_event(Msg, State) ->
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!prisutni">>]} ->
             doit(IrcBot, Channel),
             {ok, State};
+        {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!присутни">>]} ->
+            doit(IrcBot, Channel),
+            {ok, State};
         _ ->
             {ok, State}
     end.
