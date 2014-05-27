@@ -41,7 +41,7 @@ doit(IrcBot, Channel) ->
     end).
 
 wait_for_responses(Responses, 0) ->
-    Responses;
+    Responses ++ [<<" (http://status.spodeli.org)">>];
 
 wait_for_responses(Responses, Needed) ->
     receive
@@ -72,12 +72,12 @@ get_prisutni() ->
 
             case {Count, People} of
                 {0, _} ->
-                    <<"во хаклаб нема никој :(">>;
+                    <<"Во хаклаб нема никој :(">>;
                 {_, []} ->
-                    [<<"во хаклаб има ">>, CountS, <<" уреди">>];
+                    [<<"Во хаклаб има ">>, CountS, <<" уреди.">>];
                 _ ->
                     Names = [ proplists:get_value(<<"name">>, Person) || {Person} <- People ],
-                    [<<"Присутни: ">>, ircbot_lib:iolist_join(Names, ", "), <<". Вкупно уреди: ">>, CountS]
+                    [<<"Присутни: ">>, ircbot_lib:iolist_join(Names, ", "), <<". Вкупно уреди: ">>, CountS, <<".">>]
             end;
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
@@ -100,7 +100,7 @@ get_status() ->
                 <<"0">> ->
                     <<"Хаклабот е затворен. :(">>;
                 <<"1">> ->
-                    <<"Хаклабот е отворен. Дојди! (http://status.spodeli.org)">>
+                    <<"Хаклабот е отворен. Дојди!">>
             end;
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
