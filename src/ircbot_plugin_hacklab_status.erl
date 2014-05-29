@@ -17,6 +17,9 @@ handle_event(Msg, State) ->
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!status">>]} ->
             doit(IrcBot, Channel),
             {ok, State};
+        {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!статус">>]} ->
+            doit(IrcBot, Channel),
+            {ok, State};
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!prisutni">>]} ->
             doit(IrcBot, Channel),
             {ok, State};
