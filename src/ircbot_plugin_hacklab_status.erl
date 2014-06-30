@@ -15,19 +15,17 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!status">>]} ->
-            doit(IrcBot, Channel),
-            {ok, State};
+            doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!статус">>]} ->
-            doit(IrcBot, Channel),
-            {ok, State};
+            doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!prisutni">>]} ->
-            doit(IrcBot, Channel),
-            {ok, State};
+            doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!присутни">>]} ->
-            doit(IrcBot, Channel),
-            {ok, State};
-        _ ->
-            {ok, State}
+            doit(IrcBot, Channel);
+        {in, IrcBot, [_, _, <<"001">>, _Nick, _]} ->
+            spawn(fun() -> status_loop(IrcBot) end);
+        _ -> ok,
+        {ok, State}
     end.
 
 
@@ -110,6 +108,19 @@ get_status() ->
             <<"{error ", N/binary, "}">>
     end.
 
+status_loop(IrcBot) ->
+    Url = <<"http://hacklab.ot.mk/status/open">>,
+    Options = [ {recv_timeout, 120000}, {follow_redirect, true} ],
+    case hackney:get(Url, [], <<>>, Options) of
+        {ok, 200, _, Ref} ->
+            {ok, Body} = hackney:body(Ref, ?MAXBODY),
+            IrcBot:notice("#lugola", Body),
+            status_loop(IrcBot);
+        {error,timeout} ->
+            status_loop(IrcBot);
+        _ ->
+            status_loop(IrcBot)
+    end.
 
 
 handle_call(_Request, State) -> {ok, ok, State}.
