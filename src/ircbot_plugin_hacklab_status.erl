@@ -9,6 +9,7 @@
 
 init(_Args) ->
     hackney:start(),
+    spawn(fun() -> status_loop(undefined) end),
     {ok, ok}.
 
 
@@ -22,11 +23,9 @@ handle_event(Msg, State) ->
             doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!присутни">>]} ->
             doit(IrcBot, Channel);
-        {in, IrcBot, [_, _, <<"001">>, _Nick, _]} ->
-            spawn(fun() -> status_loop(IrcBot) end);
-        _ -> ok,
-        {ok, State}
-    end.
+        _ -> ok
+    end,
+    {ok, State}.
 
 
 doit(IrcBot, Channel) ->
@@ -108,18 +107,24 @@ get_status() ->
             <<"{error ", N/binary, "}">>
     end.
 
-status_loop(IrcBot) ->
+status_loop(LastStatus) ->
     Url = <<"http://hacklab.ot.mk/status/open">>,
     Options = [ {recv_timeout, 120000}, {follow_redirect, true} ],
     case hackney:get(Url, [], <<>>, Options) of
         {ok, 200, _, Ref} ->
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
-            IrcBot:notice("#lugola", Body),
-            status_loop(IrcBot);
+            case Body of
+                LastStatus ->
+                    status_loop(LastStatus) ;
+                _ ->
+                    IrcBot = ircbot_api:new(whereis(freenode)),
+                    IrcBot:notice("#lugola", Body),
+                    status_loop(Body)
+            end;
         {error,timeout} ->
-            status_loop(IrcBot);
+            status_loop(LastStatus);
         _ ->
-            status_loop(IrcBot)
+            status_loop(LastStatus)
     end.
 
 
