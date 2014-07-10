@@ -72,7 +72,8 @@ fetch(Url, Ref, Channel) ->
 
 fetcher(Url) ->
     Url1 = sanitize_url(Url),
-    Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>}],
+    Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>},
+               {<<"Accept">>, <<"text/html,application/xhtml+xml,application/xml">>}],
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
     {ok, StatusCode, RespHeaders, Ref} = hackney:request(get, Url1, Headers, <<>>, Options),
     case StatusCode of
