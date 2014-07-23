@@ -40,14 +40,19 @@ terminate(_Args, _State) -> ok.
 fetcher(Url) ->
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>}],
     Options = [{recv_timeout, 10000}, {follow_redirect, true}],
-    {ok, StatusCode, _RespHeaders, Ref} = hackney:request(post, Url, Headers, <<>>, Options),
-    hackney:close(Ref),
-    case StatusCode of
-        200 ->
+
+    case hackney:request(post, Url, Headers, <<>>, Options) of
+        {ok, 200, _RespHeaders, Ref} ->
+            hackney:close(Ref),
             <<"Трепкав.">>;
-        403 ->
+        {ok, 403, _RespHeaders, Ref} ->
+            hackney:close(Ref),
             <<"Хаклабот е затворен, не може да трепкам.">>;
-        _ ->
-            N = list_to_binary(integer_to_list(StatusCode)),
-            <<"{error ", N/binary, "}">>
+        {ok, Status, _RespHeaders, Ref} ->
+            hackney:close(Ref),
+            N = list_to_binary(integer_to_list(Status)),
+            <<"{http-error ", N/binary, "}">>;
+        {error, Err} ->
+            Err1 = atom_to_binary(Err, unicode),
+            <<"{error ", Err1/binary>>
     end.
