@@ -15,11 +15,19 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         % explicit command to fetch a web page title
-        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t ", Url/binary>>]} ->
-            fetch(Url, Ref, <<"#",Channel/binary>>),
+        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t ", Text/binary>>]} ->
+            case ircbot_lib:url_match(Text) of
+                {match, [Url]} ->
+                    fetch(Url, Ref, <<"#",Channel/binary>>);
+                _ -> ok
+            end,
             {ok, State};
-         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title ", Url/binary>>]} ->
-            fetch(Url, Ref, <<"#",Channel/binary>>),
+         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title ", Text/binary>>]} ->
+            case ircbot_lib:url_match(Text) of
+                {match, [Url]} ->
+                    fetch(Url, Ref, <<"#",Channel/binary>>);
+                _ -> ok
+            end,
             {ok, State};
         % fetch the title of the last url that appeared on the channel
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t">>]} ->
