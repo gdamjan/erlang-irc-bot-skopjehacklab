@@ -65,7 +65,7 @@ handle_event(Msg, Db) ->
 
 get_latest_state(Db) ->
     Options = [ { limit, 1 }, descending,
-                { startkey, [ {<<"клучеви">>, []} ]}
+                { startkey, [ <<"клучеви">>, {[]} ]}
               ],
     DesignName = "ircbot",
     ViewName = "by_timestamp",
