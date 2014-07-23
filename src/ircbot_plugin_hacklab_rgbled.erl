@@ -54,5 +54,5 @@ fetcher(Url) ->
             <<"{http-error ", N/binary, "}">>;
         {error, Err} ->
             Err1 = atom_to_binary(Err, unicode),
-            <<"{error ", Err1/binary>>
+            <<"{error ", Err1/binary, "}">>
     end.
