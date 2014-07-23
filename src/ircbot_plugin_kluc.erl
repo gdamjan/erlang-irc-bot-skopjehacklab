@@ -65,8 +65,8 @@ handle_event(Msg, Db) ->
 
 get_latest_state(Db) ->
     Options = [ { limit, 1 }, descending,
-                { startkey, [<<"клучеви">>, [{}] ]},
-                { endkey,   [<<"клучеви">>,    0 ]} ],
+                { startkey, [ {<<"клучеви">>, []} ]}
+              ],
     DesignName = "ircbot",
     ViewName = "by_timestamp",
     {ok, ViewResults} = couchbeam_view:fetch(Db, {DesignName, ViewName}, Options),
