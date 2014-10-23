@@ -113,6 +113,7 @@ status_loop(LastStatus) ->
     case hackney:get(Url, [], <<>>, Options) of
         {ok, 200, _, Ref} ->
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
+            hackney:close(Ref),
             case Body of
                 LastStatus ->
                     status_loop(LastStatus) ;
@@ -121,9 +122,10 @@ status_loop(LastStatus) ->
                     IrcBot:notice("#lugola", Body),
                     status_loop(Body)
             end;
-        {error,timeout} ->
+        {_, _, _, Ref} ->
+            hackney:close(Ref),
             status_loop(LastStatus);
-        _ ->
+        {error, _} ->
             status_loop(LastStatus)
     end.
 
