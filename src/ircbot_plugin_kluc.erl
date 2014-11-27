@@ -20,7 +20,7 @@
 %   }
 % }
 
--ifndef(no_utf_in_binaries).
+-ifdef(no_utf_in_binaries).
 -define(CMD, <<"!клучеви">>).
 -else.
 -define(CMD, <<"!клучеви"/utf8>>).

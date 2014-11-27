@@ -10,7 +10,7 @@
 
 init(_Args) ->
     hackney:start(),
-    spawn(?MODULE, status_loop, undefined),
+    spawn(?MODULE, status_loop, [undefined]),
     {ok, ok}.
 
 
