@@ -3,13 +3,14 @@
 
 -behaviour(gen_event).
 -export([init/1, handle_event/2, terminate/2, handle_call/2, handle_info/2, code_change/3]).
+-export([status_loop/1]).
 
 
 -define(MAXBODY, 10000).
 
 init(_Args) ->
     hackney:start(),
-    spawn(fun() -> status_loop(undefined) end),
+    spawn(?MODULE, status_loop, undefined),
     {ok, ok}.
 
 
@@ -108,7 +109,7 @@ get_status() ->
     end.
 
 status_loop(LastStatus) ->
-    Url = <<"http://hacklab.ot.mk/status/open">>,
+    Url = <<"http://hacklab.ie.mk/status/open">>,
     Options = [ {recv_timeout, 120000}, {follow_redirect, true} ],
     case hackney:get(Url, [], <<>>, Options) of
         {ok, 200, _, Ref} ->
@@ -126,6 +127,7 @@ status_loop(LastStatus) ->
             hackney:close(Ref),
             status_loop(LastStatus);
         {error, _} ->
+            timer:sleep(1000),
             status_loop(LastStatus)
     end.
 
