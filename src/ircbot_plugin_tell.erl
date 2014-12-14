@@ -76,26 +76,26 @@ reminder(Ref, Nick, Db) ->
 handle_event(Msg, Db) ->
     case Msg of
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!tell ",Rest/binary>>]} ->
-            spawn(fun() ->
+            spawn_link(fun() ->
                           Response = remember(Channel, Sender, Rest, Db),
                           Ref:privmsg(Sender, Response)
                   end);
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!ask ",Rest/binary>>]} ->
-            spawn(fun() ->
+            spawn_link(fun() ->
                           Response = remember(Channel, Sender, Rest, Db),
                           Ref:privmsg(Sender, Response)
                   end);
 
         {in, Ref, [Sender, _Name, <<"JOIN">>, <<"#",_Channel/binary>>]} ->
-            spawn(fun() ->
+            spawn_link(fun() ->
                           reminder(Ref, Sender, Db)
                   end);
         {in, Ref, [_Sender, _Name, <<"NICK">>, Nick]} ->
-            spawn(fun() ->
+            spawn_link(fun() ->
                           reminder(Ref, Nick, Db)
                   end);
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",_Channel/binary>>, _Something]} ->
-            spawn(fun() ->
+            spawn_link(fun() ->
                           reminder(Ref, Sender, Db)
                   end);
         _ ->

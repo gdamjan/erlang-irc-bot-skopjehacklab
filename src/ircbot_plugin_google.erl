@@ -28,7 +28,7 @@ terminate(_Args, _State) -> ok.
 
 
 fetch(Query, Ref, Channel) ->
-    spawn(fun() ->
+    spawn_link(fun() ->
           Response = gfl(Query),
           Ref:privmsg(Channel, Response)
     end).
