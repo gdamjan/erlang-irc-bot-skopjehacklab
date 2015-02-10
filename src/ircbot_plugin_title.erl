@@ -22,6 +22,13 @@ handle_event(Msg, State) ->
                 _ -> ok
             end,
             {ok, State};
+        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!т ", Text/binary>>]} ->
+            case ircbot_lib:url_match(Text) of
+                {match, [Url]} ->
+                    fetch(Url, Ref, <<"#",Channel/binary>>);
+                _ -> ok
+            end,
+            {ok, State};
          {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title ", Text/binary>>]} ->
             case ircbot_lib:url_match(Text) of
                 {match, [Url]} ->
