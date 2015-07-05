@@ -22,11 +22,7 @@ handle_event(Msg, State) ->
             fetch(trim(Text), Ref, <<"#",Channel/binary>>),
             {ok, State};
          {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title ", Text/binary>>]} ->
-            case ircbot_lib:url_match(Text) of
-                {match, [Url]} ->
-                    fetch(Url, Ref, <<"#",Channel/binary>>);
-                _ -> ok
-            end,
+            fetch(trim(Text), Ref, <<"#",Channel/binary>>),
             {ok, State};
         % fetch the title of the last url that appeared on the channel
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t">>]} ->
