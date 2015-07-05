@@ -16,18 +16,10 @@ handle_event(Msg, State) ->
     case Msg of
         % explicit command to fetch a web page title
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t ", Text/binary>>]} ->
-            case ircbot_lib:url_match(Text) of
-                {match, [Url]} ->
-                    fetch(Url, Ref, <<"#",Channel/binary>>);
-                _ -> ok
-            end,
+            fetch(trim(Text), Ref, <<"#",Channel/binary>>),
             {ok, State};
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!т ", Text/binary>>]} ->
-            case ircbot_lib:url_match(Text) of
-                {match, [Url]} ->
-                    fetch(Url, Ref, <<"#",Channel/binary>>);
-                _ -> ok
-            end,
+            fetch(trim(Text), Ref, <<"#",Channel/binary>>),
             {ok, State};
          {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title ", Text/binary>>]} ->
             case ircbot_lib:url_match(Text) of
@@ -86,11 +78,10 @@ fetch(Url, Ref, Channel) ->
     end).
 
 fetcher(Url) ->
-    Url1 = sanitize_url(Url),
     Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>},
                {<<"Accept">>, <<"text/html,application/xhtml+xml,application/xml">>}],
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
-    {ok, StatusCode, RespHeaders, Ref} = hackney:request(get, Url1, Headers, <<>>, Options),
+    {ok, StatusCode, RespHeaders, Ref} = hackney:request(get, Url, Headers, <<>>, Options),
     case StatusCode of
         200 ->
             <<"text/", _/binary>> = hackney_headers:get_value(<<"content-type">>, hackney_headers:new(RespHeaders)),
@@ -98,7 +89,7 @@ fetcher(Url) ->
             hackney:close(Ref),
             Tree = mochiweb_html:parse(Body),
             [{_, _, Title}|_] = mochiweb_xpath:execute("//title",Tree),
-            _Title = re:replace(Title, "\\s+", " ", [global]);
+            _Title = re:replace(Title, "\\s+", " ", [global,{return, binary}]);
         _ ->
             hackney:close(Ref),
             N = list_to_binary(integer_to_list(StatusCode)),
@@ -106,14 +97,5 @@ fetcher(Url) ->
     end.
 
 
-sanitize_url(Url) when is_binary(Url) ->
-    sanitize_url(erlang:binary_to_list(Url));
-
-sanitize_url(Url) when is_list(Url) ->
-    Url1 = string:strip(Url),
-    case {lists:prefix("http://", Url1),lists:prefix("https://", Url1)} of
-        {false, false} ->
-            lists:append("http://", Url1);
-        _ ->
-            Url1
-    end.
+trim(Url) -> % just trim space
+    re:replace(Url, "(^\\s+)|(\\s+$)", "", [global,{return, binary}]).
