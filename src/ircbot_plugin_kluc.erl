@@ -42,14 +42,14 @@ init([Url, DbName, Options]) ->
 handle_event(Msg, Db) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, ?CMD]} ->
-            spawn_link(fun () ->
+            spawn(fun () ->
                 ViewValue = get_latest_state(Db),
                 Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- ViewValue >>,
                 Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, Response])
             end),
             {ok, Db};
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви ", Rest/binary>>]} ->
-            spawn_link(fun () ->
+            spawn(fun () ->
                 ViewValue = get_latest_state(Db),
                 NewValue = process_changes(Rest, ViewValue),
                 {MegaSecs, Secs, MicroSecs} = now(),

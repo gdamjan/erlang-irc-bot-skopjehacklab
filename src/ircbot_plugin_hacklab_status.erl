@@ -10,7 +10,7 @@
 
 init(_Args) ->
     hackney:start(),
-    spawn_link(?MODULE, status_loop, [undefined]),
+    spawn(?MODULE, status_loop, [undefined]),
     {ok, ok}.
 
 
@@ -30,14 +30,14 @@ handle_event(Msg, State) ->
 
 
 doit(IrcBot, Channel) ->
-    Collector = spawn_link(fun() ->
+    Collector = spawn(fun() ->
         Response = wait_for_responses([], 2),
         IrcBot:privmsg(Channel, Response)
     end),
-    spawn_link(fun() ->
+    spawn(fun() ->
         Collector ! { prisutni, get_prisutni() }
     end),
-    spawn_link(fun() ->
+    spawn(fun() ->
         Collector ! { status, get_status() }
     end).
 

@@ -68,7 +68,7 @@ fetch_last(State, Ref, Channel) ->
 %% The function gets spawned as a separate process, and fails silently on any
 %% error.
 fetch(Url, Ref, Channel) ->
-    spawn_link(fun() ->
+    spawn(fun() ->
         Response = fetcher(Url),
         Ref:privmsg(Channel, Response)
     end).
