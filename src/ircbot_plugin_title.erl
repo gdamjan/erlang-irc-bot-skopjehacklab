@@ -18,7 +18,7 @@ handle_event(Msg, State) ->
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t ", Text/binary>>]} ->
             fetch(trim(Text), Ref, <<"#",Channel/binary>>),
             {ok, State};
-        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!т ", Text/binary>>]} ->
+        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!т "/utf8, Text/binary>>]} ->
             fetch(trim(Text), Ref, <<"#",Channel/binary>>),
             {ok, State};
          {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title ", Text/binary>>]} ->
@@ -28,7 +28,7 @@ handle_event(Msg, State) ->
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!t">>]} ->
             NewState = fetch_last(State, Ref, <<"#",Channel/binary>>),
             {ok, NewState};
-        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!т">>]} ->
+        {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!т"/utf8>>]} ->
             NewState = fetch_last(State, Ref, <<"#",Channel/binary>>),
             {ok, NewState};
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!title">>]} ->

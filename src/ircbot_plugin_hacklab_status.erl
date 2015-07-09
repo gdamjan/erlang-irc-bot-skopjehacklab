@@ -18,11 +18,11 @@ handle_event(Msg, State) ->
     case Msg of
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!status">>]} ->
             doit(IrcBot, Channel);
-        {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!статус">>]} ->
+        {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!статус"/utf8>>]} ->
             doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!prisutni">>]} ->
             doit(IrcBot, Channel);
-        {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!присутни">>]} ->
+        {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!присутни"/utf8>>]} ->
             doit(IrcBot, Channel);
         _ -> ok
     end,
@@ -73,12 +73,12 @@ get_prisutni() ->
 
             case {Count, People} of
                 {0, _} ->
-                    <<"Во хаклаб нема никој :(">>;
+                    <<"Во хаклаб нема никој :("/utf8>>;
                 {_, []} ->
-                    [<<"Во хаклаб има ">>, CountS, <<" уреди.">>];
+                    [<<"Во хаклаб има "/utf8>>, CountS, <<" уреди."/utf8>>];
                 _ ->
                     Names = [ proplists:get_value(<<"name">>, Person) || {Person} <- People ],
-                    [<<"Присутни: ">>, ircbot_lib:iolist_join(Names, ", "), <<". Вкупно уреди: ">>, CountS, <<".">>]
+                    [<<"Присутни: "/utf8>>, ircbot_lib:iolist_join(Names, ", "), <<". Вкупно уреди: "/utf8>>, CountS, <<".">>]
             end;
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
@@ -99,9 +99,9 @@ get_status() ->
             Current_Value = proplists:get_value(<<"current_value">>, Json),
             case Current_Value of
                 <<"0">> ->
-                    <<"Хаклабот е затворен. :(">>;
+                    <<"Хаклабот е затворен. :("/utf8>>;
                 <<"1">> ->
-                    <<"Хаклабот е отворен. Дојди!">>
+                    <<"Хаклабот е отворен. Дојди!"/utf8>>
             end;
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
