@@ -17,7 +17,7 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         % explicit command to make an api call for the RGB
-        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#lugola">>, <<"!алохаклаб">>]} ->
+        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#lugola">>, <<"!алохаклаб"/utf8>>]} ->
             Url = <<"http://hacklab.ie.mk/api/blink">>,
             spawn(fun() ->
                 Answer = fetcher(Url),
@@ -44,10 +44,10 @@ fetcher(Url) ->
     case hackney:request(post, Url, Headers, <<>>, Options) of
         {ok, 200, _RespHeaders, Ref} ->
             hackney:close(Ref),
-            <<"Трепкав.">>;
+            <<"Трепкав."/utf8>>;
         {ok, 403, _RespHeaders, Ref} ->
             hackney:close(Ref),
-            <<"Хаклабот е затворен, не може да трепкам.">>;
+            <<"Хаклабот е затворен, не може да трепкам."/utf8>>;
         {ok, Status, _RespHeaders, Ref} ->
             hackney:close(Ref),
             N = list_to_binary(integer_to_list(Status)),
