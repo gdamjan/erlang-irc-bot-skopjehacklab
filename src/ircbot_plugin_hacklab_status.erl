@@ -86,21 +86,18 @@ get_prisutni() ->
     end.
 
 get_status() ->
-    Url = <<"https://api.xively.com/v2/feeds/86779/datastreams/hacklab_status.json">>,
-    Headers = [{<<"User-Agent">>, <<"Mozilla/5.0 (erlang-irc-bot)">>},
-                {<<"X-ApiKey">>,<<"vqElqXeb7Lu6ZwDElnKQ8XpGMG-SAKxxMHV3YWFoeHE4OD0g">>}],
+    Url = <<"http://hacklab.ie.mk/status">>,
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
-    {ok, StatusCode, _RespHeaders, Ref} = hackney:request(get, Url, Headers, <<>>, Options),
+    {ok, StatusCode, _RespHeaders, Ref} = hackney:request(get, Url, [], <<>>, Options),
     {ok, Body} = hackney:body(Ref, ?MAXBODY),
     hackney:close(Ref),
     case StatusCode of
         200 ->
-            {Json} = couchbeam_ejson:decode(Body),
-            Current_Value = proplists:get_value(<<"current_value">>, Json),
-            case Current_Value of
-                <<"0">> ->
+            {match, [Status]} = re:run(Body, <<"^status: (.*)$">>, [caseless, multiline, {capture, [1], binary}]),
+            case Status of
+                <<"CLOSED">> ->
                     <<"Хаклабот е затворен. :("/utf8>>;
-                <<"1">> ->
+                <<"OPEN">> ->
                     <<"Хаклабот е отворен. Дојди!"/utf8>>
             end;
         _ ->
