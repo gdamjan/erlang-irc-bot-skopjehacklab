@@ -98,7 +98,7 @@ get_status() ->
                 <<"CLOSED">> ->
                     <<"Хаклабот е затворен. :("/utf8>>;
                 <<"OPEN">> ->
-                    <<"Хаклабот е отворен. Дојди!"/utf8>>
+                    <<"Хаклабот е отворен. Дојди Дамјан!"/utf8>>
             end;
         _ ->
             N = list_to_binary(integer_to_list(StatusCode)),
