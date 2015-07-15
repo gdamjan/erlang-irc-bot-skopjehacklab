@@ -15,6 +15,7 @@ Then copy `settings.cfg.sample` to `settings.cfg`, edit it to set passwords and 
     ./run.sh
 
 
+Note: only Erlang 17 and up will be tested.
 
 An extensible ircbot written in Erlang
 ======================================
