@@ -20,13 +20,6 @@
 %   }
 % }
 
--ifdef(no_utf_in_binaries).
--define(CMD, <<"!клучеви">>).
--else.
--define(CMD, <<"!клучеви"/utf8>>).
--endif.
-
-
 init([DbName]) ->
     init([DbName, []]);
 
@@ -41,14 +34,14 @@ init([Url, DbName, Options]) ->
 
 handle_event(Msg, Db) ->
     case Msg of
-        {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, ?CMD]} ->
+        {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви"/utf8>>]} ->
             spawn(fun () ->
                 ViewValue = get_latest_state(Db),
                 Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- ViewValue >>,
-                Ref:privmsg(Channel, [<<"Клучеви имаат: ">>, Response])
+                Ref:privmsg(Channel, [<<"Клучеви имаат: "/utf8>>, Response])
             end),
             {ok, Db};
-        {in, Ref, [Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви ", Rest/binary>>]} ->
+        {in, Ref, [Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви "/utf8, Rest/binary>>]} ->
             spawn(fun () ->
                 ViewValue = get_latest_state(Db),
                 NewValue = process_changes(Rest, ViewValue),
@@ -58,7 +51,7 @@ handle_event(Msg, Db) ->
                      {<<"timestamp">>,  Timestamp},
                      {<<"sender">>, Sender},
                      {<<"channel">>, Channel},
-                     {<<"type">>, <<"клучеви">>},
+                     {<<"type">>, <<"клучеви"/utf8>>},
                      {<<"keys">>, NewValue}
                 ]},
                 couchbeam:save_doc(Db, Doc),
@@ -72,7 +65,7 @@ handle_event(Msg, Db) ->
 
 get_latest_state(Db) ->
     Options = [ { limit, 1 }, descending,
-                { startkey, [ <<"клучеви">>, {[]} ]}
+                { startkey, [ <<"клучеви"/utf8>>, {[]} ]}
               ],
     DesignName = "ircbot",
     ViewName = "by_timestamp",
