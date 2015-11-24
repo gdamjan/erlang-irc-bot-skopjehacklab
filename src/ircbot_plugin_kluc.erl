@@ -27,7 +27,7 @@ init([DbName, Options]) ->
     init([<<"http://localhost:5984">>, DbName, Options]);
 
 init([Url, DbName, Options]) ->
-    couchbeam:start(),
+    application:ensure_all_started(couchbeam),
     Server = couchbeam:server_connection(Url, Options),
     {ok, _Db} = couchbeam:open_db(Server, DbName, []).
 
