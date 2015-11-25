@@ -10,7 +10,7 @@
 
 init(_Args) ->
     hackney:start(),
-    spawn(?MODULE, status_loop, [undefined]),
+    spawn_link(?MODULE, status_loop, [undefined]),
     {ok, ok}.
 
 
@@ -86,14 +86,14 @@ get_prisutni() ->
     end.
 
 get_status() ->
-    Url = <<"http://hacklab.ie.mk/status">>,
+    Url = <<"http://hacklab.ie.mk/status/">>,
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
     {ok, StatusCode, _RespHeaders, Ref} = hackney:request(get, Url, [], <<>>, Options),
     {ok, Body} = hackney:body(Ref, ?MAXBODY),
     hackney:close(Ref),
     case StatusCode of
         200 ->
-            {match, [Status]} = re:run(Body, <<"^status: (.*)$">>, [caseless, multiline, {capture, [1], binary}]),
+            {match, [Status]} = re:run(Body, <<"^status: (\\w+)">>, [caseless, multiline, {capture, [1], binary}]),
             case Status of
                 <<"CLOSED">> ->
                     <<"Хаклабот е затворен. :("/utf8>>;
