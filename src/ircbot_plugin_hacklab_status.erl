@@ -3,7 +3,7 @@
 
 -behaviour(gen_event).
 -export([init/1, handle_event/2, terminate/2, handle_call/2, handle_info/2, code_change/3]).
--export([status_loop/1, get_status/0, get_temps/0]).
+-export([status_loop/1, get_status/0, influx_request/2]).
 
 
 -define(MAXBODY, 10000).
@@ -32,7 +32,8 @@ handle_event(Msg, State) ->
 doit(IrcBot, Channel) ->
   spawn(fun() ->
     Job1 = rpc:async_call(node(), ?MODULE, get_status, []),
-    Job2 = rpc:async_call(node(), ?MODULE, get_temps, []),
+    Job2 = rpc:async_call(node(), ?MODULE, influx_request, [<<"outside,hardware_room,random_room,lounge_area">>, <<"temperatures">>]),
+    Job3 = rpc:async_call(node(), ?MODULE, influx_request, [<<"value">>, <<"landevices">>]),
 
     % TODO handle timeouts of yield and hackney errors
     Status = case rpc:yield(Job1) of
@@ -47,13 +48,21 @@ doit(IrcBot, Channel) ->
     Temperature = case rpc:yield(Job2) of
       {error, ErrMsg2} ->
         <<"Температури: непознато ("/utf8, ErrMsg2/binary, ")"/utf8>>;
-      Temps ->
+      {ok, Temps} ->
         Temps1 = [float_to_binary(float(T), [{decimals,2}]) || T <- Temps],
         Temps2 = hackney_bstr:join(Temps1, ", "),
         <<"Температури: "/utf8, Temps2/binary>>
     end,
 
-    Response = hackney_bstr:join([Status, Temperature, <<"http://status.spodeli.org/"/utf8>>], <<" • "/utf8>>),
+    Devices = case rpc:yield(Job3) of
+      {error, ErrMsg3} ->
+        <<"Непознато уреди во мрежа ("/utf8, ErrMsg3/binary,")"/utf8>>;
+      {ok, [N]} ->
+        Num = hackney_bstr:to_binary(N),
+        <<"Уреди во мрежа: "/utf8, Num/binary>>
+    end,
+
+    Response = hackney_bstr:join([Status, Temperature, Devices, <<"http://status.spodeli.org/"/utf8>>], <<" • "/utf8>>),
     IrcBot:privmsg(Channel, Response)
   end).
 
@@ -79,21 +88,21 @@ get_status_result(StatusCode, Ref) ->
       {error, <<"http:", ErrMsg/binary>>}
   end.
 
-get_temps() ->
+influx_request(Values, Table) ->
   DbUrl = <<"https://db.softver.org.mk/influxdb/">>,
   Path = <<"query">>,
   Query = [{<<"db">>, <<"status">>},
-    {<<"q">>, <<"SELECT outside,hardware_room,random_room,lounge_area FROM temperatures ORDER BY time DESC LIMIT 1">>}],
+    {<<"q">>, <<"SELECT ", Values/binary, " FROM ", Table/binary, " ORDER BY time DESC LIMIT 1">>}],
   Url = hackney_url:make_url(DbUrl, Path, Query),
   Options = [{recv_timeout, 5000}, {follow_redirect, true}],
   case hackney:request(get, Url, [], <<>>, Options) of
     {ok, StatusCode, _RespHeaders, Ref} ->
-      get_temps_result(StatusCode, Ref);
+      influx_request_values(StatusCode, Ref);
     {error, Error} ->
       {error, atom_to_binary(Error, utf8)}
   end.
 
-get_temps_result(StatusCode, Ref) ->
+influx_request_values(StatusCode, Ref) ->
   {ok, Body} = hackney:body(Ref),
   hackney:close(Ref),
   case StatusCode of
@@ -101,8 +110,8 @@ get_temps_result(StatusCode, Ref) ->
       {Json} = couchbeam_ejson:decode(Body),
       [{Result0}|_] = proplists:get_value(<<"results">>, Json),
       [{Serie0}|_] = proplists:get_value(<<"series">>, Result0),
-      [[_Timestamp|Temps]] = proplists:get_value(<<"values">>, Serie0),
-      Temps;
+      [[_Timestamp|Values]] = proplists:get_value(<<"values">>, Serie0),
+      {ok, Values};
     _ ->
       ErrMsg = list_to_binary(integer_to_list(StatusCode)),
       {error, <<"http:", ErrMsg/binary>>}
