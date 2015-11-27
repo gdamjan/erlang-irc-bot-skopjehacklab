@@ -37,23 +37,23 @@ doit(IrcBot, Channel) ->
     % TODO handle timeouts of yield and hackney errors
     Status = case rpc:yield(Job1) of
       {error, ErrMsg1} ->
-        <<"Не се знае дали е отворено ("/utf8, ErrMsg1/binary,").">>;
+        <<"Не се знае дали е отворено ("/utf8, ErrMsg1/binary,")">>;
       <<"CLOSED">> ->
-        <<"Хаклабот е затворен. :("/utf8>>;
+        <<"Хаклабот е затворен 😞"/utf8>>;
       <<"OPEN">> ->
         <<"Хаклабот е отворен. Дојди!"/utf8>>
     end,
 
     Temperature = case rpc:yield(Job2) of
       {error, ErrMsg2} ->
-        <<"Температури: непознато ("/utf8, ErrMsg2/binary, ")."/utf8>>;
+        <<"Температури: непознато ("/utf8, ErrMsg2/binary, ")"/utf8>>;
       Temps ->
         Temps1 = [float_to_binary(float(T), [{decimals,2}]) || T <- Temps],
         Temps2 = hackney_bstr:join(Temps1, ", "),
-        <<"Температури: "/utf8, Temps2/binary, ".">>
+        <<"Температури: "/utf8, Temps2/binary>>
     end,
 
-    Response = hackney_bstr:join([Status, Temperature, <<"(http://status.spodeli.org/)"/utf8>>], " "),
+    Response = hackney_bstr:join([Status, Temperature, <<"http://status.spodeli.org/"/utf8>>], <<" • "/utf8>>),
     IrcBot:privmsg(Channel, Response)
   end).
 
