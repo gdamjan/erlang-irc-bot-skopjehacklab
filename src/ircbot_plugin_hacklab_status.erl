@@ -81,7 +81,7 @@ get_status_result(StatusCode, Ref) ->
   hackney:close(Ref),
   case StatusCode of
     200 ->
-      {match, [Status]} = re:run(Body, <<"^status: (\\w+)">>, [caseless, multiline, {capture, [1], binary}]),
+      {match, [Status]} = re:run(Body, <<"^status: (\\w+)$">>, [caseless, multiline, {newline, anycrlf}, {capture, [1], binary}]),
       Status;
     _ ->
       ErrMsg = list_to_binary(integer_to_list(StatusCode)),
