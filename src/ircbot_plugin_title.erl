@@ -6,7 +6,7 @@
 
 
 
--define(MAXBODY, 10000).
+-define(MAXBODY, 50000).
 
 init(_Args) ->
     hackney:start(),
