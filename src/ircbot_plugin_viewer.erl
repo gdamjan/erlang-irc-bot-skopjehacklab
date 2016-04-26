@@ -15,7 +15,7 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         {in, Ref, [_Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, Text]} ->
-            case ircbot_lib:url_match(Text, "\\.doc|\\.pdf|\\.pps|\\.tiff|\\.tif") of
+            case ircbot_lib:url_match(Text, "\\.doc|\\.pps|\\.tiff|\\.tif") of
                 {match, [Url]} ->
                     Url1 = ircbot_lib:escape_uri(Url),
                     Ref:notice(<<"#",Channel/binary>>, <<"http://docs.google.com/viewer?url=", Url1/binary>>),
