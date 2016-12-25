@@ -1,0 +1,5 @@
+-noshell
+-noinput
+-sasl errlog_type error
++K true
+-start_epmd false

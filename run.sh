@@ -3,7 +3,7 @@ BASEDIR=`dirname $0`
 BASEDIR=`readlink -f $BASEDIR`
 cd $BASEDIR
 
-ERL_LIBS=$BASEDIR:$BASEDIR/deps
+ERL_LIBS=$BASEDIR/_build/default/lib/
 export ERL_LIBS
 
 SNAME=ircbot@localhost
