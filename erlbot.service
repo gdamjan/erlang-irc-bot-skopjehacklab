@@ -1,0 +1,19 @@
+[Unit]
+Description=erlbot, irc bot
+After=syslog.target couchdb.service
+
+[Service]
+User=erlbot
+RuntimeDirectory=erlbot
+WorkingDirectory=/run/erlbot
+Environment=HOME=/run/erlbot
+Environment=CONF=/etc/erlbot/settings.cfg
+Environment=SNAME=erlbot
+Environment=ERL_LIBS=/opt/erlbot/lib
+ExecStart=/usr/bin/erl +K true -noinput -noshell -sasl errlog_type error \
+            -sname ${SNAME}@localhost -s ircbot_app -conf ${CONF}
+Restart=always
+SyslogIdentifier=erlbot
+
+[Install]
+WantedBy=multi-user.target
