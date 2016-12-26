@@ -1,5 +1,7 @@
 This is a skopjehacklab instance of the erlang irc bot
-=======================================================
+======================================================
+
+[![Build Status](https://app.snap-ci.com/gdamjan/erlang-irc-bot-skopjehacklab/branch/master/build_image)](https://app.snap-ci.com/gdamjan/erlang-irc-bot-skopjehacklab/branch/master)
 
 This is the bot running as `erlbot--` on freenode and connected to several
 channels such as #lugola, #nsnd, #razmjenavjestina, etc… It has some more plugins
