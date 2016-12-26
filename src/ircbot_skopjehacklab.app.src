@@ -5,11 +5,8 @@
   {registered, []},
   {applications, [kernel,
                   stdlib,
-                  asn1,
-                  crypto,
-                  public_key,
-                  ssl,
                   hackney,
+                  jsx,
                   couchbeam
   ]},
   {env, []}
