@@ -51,7 +51,7 @@ play(Nick, PlayerAttack) ->
 %% choose a computer attack at random
 get_computer_attack() ->
     %% Get an index position at random
-    Index = random:uniform(5),
+    Index = rand:uniform(5),
     %% Pull out an attack
     lists:nth(Index, [rock, paper, scissors, spock, lizard]).
 

@@ -34,8 +34,7 @@ init([Url, DbName, Options]) ->
 %% Log only messages to channel to a CouchDB database
 %% Logs the sender, the channel, the message and the timestamp
 log_message(Db, Sender, Channel, Message) ->
-    {MegaSecs, Secs, MicroSecs} = now(),
-    Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
+    Timestamp = erlang:system_time() / 1000000000,
     Doc =  {[
          {<<"sender">>, Sender},
          {<<"channel">>, Channel},
@@ -45,8 +44,7 @@ log_message(Db, Sender, Channel, Message) ->
     catch couchbeam:save_doc(Db, Doc).
 
 log_topic(Db, Sender, Channel, Topic) ->
-    {MegaSecs, Secs, MicroSecs} = now(),
-    Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
+    Timestamp = erlang:system_time() / 1000000000,
     Doc =  {[
          {<<"sender">>, Sender},
          {<<"channel">>, Channel},

@@ -7,7 +7,7 @@
 
 
 init(_Args) ->
-    random:seed(now()),
+    rand:seed(exsplus),
     {ok, []}.
 
 handle_event(Msg, State) ->
@@ -18,12 +18,12 @@ handle_event(Msg, State) ->
                     S = list_to_integer(binary_to_list(Start)),
                     E = list_to_integer(binary_to_list(End)),
                     N = abs(S - E),
-                    R = random:uniform(N) + erlang:min(S, E);
+                    R = rand:uniform(N) + erlang:min(S, E);
                 {match, [[End]]} ->
                     N = list_to_integer(binary_to_list(End)),
-                    R = random:uniform(N);
+                    R = rand:uniform(N);
                 _ ->
-                    R = random:uniform()
+                    R = rand:uniform()
             end,
             RB = list_to_binary(io_lib:format("~p",[R])),
             Ref:privmsg(<<"#",Channel/binary>>, <<"I'm rolling a ", RB/binary>>);

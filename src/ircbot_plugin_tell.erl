@@ -23,24 +23,8 @@ init([Url, DbName, Options]) ->
         Server = couchbeam:server_connection(Url, Options),
         {ok, _Db} = couchbeam:open_db(Server, DbName, []).
 
-fancy_time(Timestamp) ->
-    {NowMega, NowSec,_NowMicro} = erlang:now(),
-    NowTimestamp = NowMega * 1000000 + NowSec,
-    DeltaMinutes = (NowTimestamp - trunc(Timestamp)) div 60,
-    if
-        DeltaMinutes < 2 ->
-            "just a minute ago";
-        DeltaMinutes < 80 ->
-            integer_to_list(DeltaMinutes + 1) ++ " minutes ago";
-        DeltaMinutes < 36 * 60 ->
-            integer_to_list(DeltaMinutes div 60) ++ " hours ago";
-        true ->
-            integer_to_list(DeltaMinutes div (60 * 24)) ++ " days ago"
-    end.
-
 remember(Channel, Sender, Msg, Db) ->
-    {MegaSecs, Secs, MicroSecs} = now(),
-    Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
+    Timestamp = erlang:system_time() / 1000000000,
     [Recepient | Message] = re:split(Msg, "[^a-zA-Z0-9^|_{}[\\]\\\\`-]", [{parts,2}]),
     Key = list_to_binary(string:to_lower(binary_to_list(Recepient))),
     Doc =  {[
@@ -60,6 +44,7 @@ reminder(Ref, Nick, Db) ->
     DesignName = "ircbot",
     ViewName = "by_recipient",
     {ok, ViewResults} = couchbeam_view:fetch(Db, {DesignName, ViewName}, Options),
+    Now = erlang:system_time() / 1000000000,
     lists:foreach(fun ({Row}) ->
                     Id = proplists:get_value(<<"id">>, Row),
                     {ok, Doc} = couchbeam:open_doc(Db, Id),
@@ -67,7 +52,7 @@ reminder(Ref, Nick, Db) ->
                     Channel = couchbeam_doc:get_value(<<"channel">>, Doc),
                     Msg = couchbeam_doc:get_value(<<"message">>, Doc),
                     Timestamp = couchbeam_doc:get_value(<<"timestamp">>, Doc),
-                    Response = [fancy_time(Timestamp), " ", From, " on ", Channel, ": ", Msg],
+                    Response = [ircbot_common:fancy_time_diff(Timestamp, Now), " ", From, " on ", Channel, ": ", Msg],
                     Ref:privmsg(Nick, Response),
                     couchbeam:delete_doc(Db, Doc)
                   end, ViewResults).

@@ -45,8 +45,7 @@ handle_event(Msg, Db) ->
             spawn(fun () ->
                 ViewValue = get_latest_state(Db),
                 NewValue = process_changes(Rest, ViewValue),
-                {MegaSecs, Secs, MicroSecs} = now(),
-                Timestamp = MegaSecs * 1000000 + Secs + MicroSecs/1000000,
+                Timestamp = erlang:system_time() / 1000000000,
                 Doc =  {[
                      {<<"timestamp">>,  Timestamp},
                      {<<"sender">>, Sender},
