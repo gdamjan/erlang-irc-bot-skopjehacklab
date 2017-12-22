@@ -49,7 +49,7 @@ doit(IrcBot, Channel) ->
       {error, ErrMsg2} ->
         <<"Температури: непознато ("/utf8, ErrMsg2/binary, ")"/utf8>>;
       {ok, Temps} ->
-        Temps1 = [float_to_binary(float(T), [{decimals,2}]) || T <- Temps],
+        Temps1 = [float_to_binary(float(T), [{decimals,2}]) || T <- Temps, T /= null],
         Temps2 = hackney_bstr:join(Temps1, ", "),
         <<"Температури: "/utf8, Temps2/binary>>
     end,
