@@ -3,14 +3,14 @@
 
 -behaviour(gen_event).
 -export([init/1, handle_event/2, terminate/2, handle_call/2, handle_info/2, code_change/3]).
--export([status_loop/1, get_status/0, influx_request/2]).
+-export([status_loop/2, get_status/0, influx_request/2]).
 
 
 -define(MAXBODY, 10000).
 
 init(_Args) ->
     hackney:start(),
-    spawn_link(?MODULE, status_loop, [undefined]),
+    spawn_link(?MODULE, status_loop, [undefined, "0"]),
     {ok, ok}.
 
 
@@ -118,27 +118,29 @@ influx_request_values(StatusCode, Ref) ->
   end.
 
 
-status_loop(LastStatus) ->
-    Url = <<"http://hacklab.ie.mk/status/open">>,
+status_loop(LastStatus, LastModified) ->
+    Url = <<"https://hacklab.ie.mk/sub?id=status">>,
     Options = [ {recv_timeout, 120000}, {follow_redirect, true} ],
-    case hackney:get(Url, [], <<>>, Options) of
-        {ok, 200, _, Ref} ->
+    Headers = [ {if_modified_since, LastModified} ],
+    case hackney:get(Url, Headers, <<>>, Options) of
+        {ok, 200, RespHeaders, Ref} ->
+            NewLastModified = hackney_headers_new:get_value(<<"Last-Modified">>, hackney_headers_new:from_list(RespHeaders)),
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
             hackney:close(Ref),
             case Body of
                 LastStatus ->
-                    status_loop(LastStatus) ;
+                    status_loop(LastStatus, NewLastModified);
                 _ ->
                     IrcBot = ircbot_api:new(whereis(freenode)),
                     IrcBot:notice("#lugola", Body),
-                    status_loop(Body)
+                    status_loop(Body, NewLastModified)
             end;
         {_, _, _, Ref} ->
             hackney:close(Ref),
-            status_loop(LastStatus);
+            status_loop(LastStatus, LastModified);
         {error, _} ->
             timer:sleep(1000),
-            status_loop(LastStatus)
+            status_loop(LastStatus, LastModified)
     end.
 
 
