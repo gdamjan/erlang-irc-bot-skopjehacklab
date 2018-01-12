@@ -9,7 +9,6 @@
 -define(MAXBODY, 10000).
 
 init(_Args) ->
-    hackney:start(),
     spawn_link(?MODULE, status_loop, [undefined, "0"]),
     {ok, ok}.
 

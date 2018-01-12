@@ -9,7 +9,6 @@
 -define(MAXBODY, 50000).
 
 init(_Args) ->
-    hackney:start(),
     {ok, dict:new()}.
 
 handle_event(Msg, State) ->

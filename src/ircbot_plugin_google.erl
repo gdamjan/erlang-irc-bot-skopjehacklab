@@ -6,7 +6,6 @@
 
 
 init(_Args) ->
-    hackney:start(),
     {ok, []}.
 
 handle_event(Msg, State) ->
