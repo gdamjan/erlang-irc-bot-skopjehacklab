@@ -9,7 +9,7 @@
 -define(MAXBODY, 10000).
 
 init(_Args) ->
-    spawn_link(?MODULE, status_loop, [undefined, "0", fun status_notice/1]),
+    spawn_link(?MODULE, status_loop, [undefined, [], fun status_notice/1]),
     {ok, ok}.
 
 
@@ -120,29 +120,31 @@ status_notice(Status) ->
     IrcBot = ircbot_api:new(whereis(freenode)),
     IrcBot:notice("#lugola", Status).
 
-status_loop(LastStatus, LastModified, Callback) ->
+status_loop(LastStatus, ReqHeaders, Callback) ->
     Url = <<"https://hacklab.ie.mk/sub?id=status">>,
     Options = [ {recv_timeout, 120000}, {follow_redirect, true} ],
-    Headers = [ {if_modified_since, LastModified} ],
-    case hackney:get(Url, Headers, <<>>, Options) of
+    case hackney:get(Url, ReqHeaders, <<>>, Options) of
         {ok, 200, RespHeaders, Ref} ->
-            NewLastModified = hackney_headers_new:get_value(<<"Last-Modified">>, hackney_headers_new:from_list(RespHeaders)),
+            H = hackney_headers_new:from_list(RespHeaders),
+            LastModified = hackney_headers_new:get_value(<<"Last-Modified">>, H),
+            Etag = hackney_headers_new:get_value(<<"Etag">>, H),
+            NextHeaders = [ {if_modified_since, LastModified}, {if_none_match, Etag} ],
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
             hackney:close(Ref),
             case Body of
                 LastStatus ->
-                    status_loop(LastStatus, NewLastModified, Callback);
+                    status_loop(LastStatus, NextHeaders, Callback);
                 _ ->
                     %% status changed
                     Callback(Body),
-                    status_loop(Body, NewLastModified, Callback)
+                    status_loop(Body, NextHeaders, Callback)
             end;
         {_, _, _, Ref} ->
             hackney:close(Ref),
-            status_loop(LastStatus, LastModified, Callback);
+            status_loop(LastStatus, ReqHeaders, Callback);
         {error, _} ->
             timer:sleep(1000),
-            status_loop(LastStatus, LastModified, Callback)
+            status_loop(LastStatus, ReqHeaders, Callback)
     end.
 
 
