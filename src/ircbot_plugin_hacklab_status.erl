@@ -9,12 +9,13 @@
 -define(MAXBODY, 10000).
 
 init(_Args) ->
-    spawn_link(?MODULE, status_loop, [undefined, [], fun status_notice/1]),
     {ok, ok}.
 
 
 handle_event(Msg, State) ->
     case Msg of
+        {in, _IrcBot, [_Server, _Name, <<"JOIN">>, <<"#lugola">>]} ->
+            spawn(?MODULE, status_loop, [undefined, [], fun status_notice/1]);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!status">>]} ->
             doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!статус"/utf8>>]} ->
@@ -66,7 +67,7 @@ doit(IrcBot, Channel) ->
   end).
 
 get_status() ->
-    Url = <<"http://hacklab.ie.mk/status/">>,
+    Url = <<"https://hacklab.ie.mk/sub?id=status">>,
     Options = [{recv_timeout, 5000}, {follow_redirect, true}],
     case hackney:request(get, Url, [], <<>>, Options) of
       {ok, StatusCode, _RespHeaders, Ref} ->
@@ -80,8 +81,7 @@ get_status_result(StatusCode, Ref) ->
   hackney:close(Ref),
   case StatusCode of
     200 ->
-      {match, [Status]} = re:run(Body, <<"^status: (\\w+)$">>, [caseless, multiline, {newline, anycrlf}, {capture, [1], binary}]),
-      Status;
+      Body;
     _ ->
       ErrMsg = list_to_binary(integer_to_list(StatusCode)),
       {error, <<"http:", ErrMsg/binary>>}
