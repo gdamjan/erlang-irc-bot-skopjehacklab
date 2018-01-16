@@ -9,13 +9,12 @@
 -define(MAXBODY, 10000).
 
 init(_Args) ->
+    spawn_link(?MODULE, status_loop, [undefined, [], fun status_notice/1]),
     {ok, ok}.
 
 
 handle_event(Msg, State) ->
     case Msg of
-        {in, _IrcBot, [_Server, _Name, <<"JOIN">>, <<"#lugola">>]} ->
-            spawn(?MODULE, status_loop, [undefined, [], fun status_notice/1]);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!status">>]} ->
             doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!статус"/utf8>>]} ->
@@ -141,9 +140,10 @@ status_loop(LastStatus, ReqHeaders, Callback) ->
             end;
         {_, _, _, Ref} ->
             hackney:close(Ref),
+            timer:sleep(5000),
             status_loop(LastStatus, ReqHeaders, Callback);
         {error, _} ->
-            timer:sleep(1000),
+            timer:sleep(5000),
             status_loop(LastStatus, ReqHeaders, Callback)
     end.
 
