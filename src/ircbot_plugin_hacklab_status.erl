@@ -9,7 +9,6 @@
 -define(MAXBODY, 10000).
 
 init(_Args) ->
-    spawn_link(?MODULE, status_loop, [undefined, [], fun status_notice/1]),
     {ok, ok}.
 
 
@@ -23,6 +22,8 @@ handle_event(Msg, State) ->
             doit(IrcBot, Channel);
         {in, IrcBot, [_Nick, _Name, <<"PRIVMSG">>, Channel = <<"#lugola">>, <<"!присутни"/utf8>>]} ->
             doit(IrcBot, Channel);
+        {IrcBot, online} ->
+            spawn_link(?MODULE, status_loop, [undefined, [], fun (Status) ->  status_notice(IrcBot, Status) end]);
         _ -> ok
     end,
     {ok, State}.
@@ -115,8 +116,7 @@ influx_request_values(StatusCode, Ref) ->
       {error, <<"http:", ErrMsg/binary>>}
   end.
 
-status_notice(Status) ->
-    IrcBot = ircbot_api:new(whereis(freenode)),
+status_notice(IrcBot, Status) ->
     IrcBot:notice("#lugola", Status).
 
 status_loop(LastStatus, ReqHeaders, Callback) ->
