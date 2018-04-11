@@ -1,0 +1,29 @@
+# This file is a template, and might need editing before it works on your project.
+image: erlang:latest
+
+build_job:
+  stage: build
+  script:
+    - rebar3 get-deps
+    - rebar3 compile
+
+release_job:
+  stage: release
+  when: manual
+  script:
+    - rebar3 get-deps
+    - rebar3 compile
+    - rebar3 as prod release
+  artifacts:
+    paths:
+      - _build/prod/rel/ircbot/
+
+stages:
+  - build
+  - test
+  - release
+
+cache:
+  paths:
+  - /root/.cache
+  - _build/
