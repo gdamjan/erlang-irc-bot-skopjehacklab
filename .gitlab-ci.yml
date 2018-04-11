@@ -9,14 +9,16 @@ build_job:
 
 release_job:
   stage: release
-  when: manual
   script:
     - rebar3 get-deps
     - rebar3 compile
     - rebar3 as prod release
   artifacts:
+    name: "$CI_COMMIT_REF_NAME"
     paths:
       - _build/prod/rel/ircbot/
+  only:
+    - tags
 
 stages:
   - build
