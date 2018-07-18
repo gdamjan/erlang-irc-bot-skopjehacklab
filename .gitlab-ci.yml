@@ -1,11 +1,12 @@
-# This file is a template, and might need editing before it works on your project.
-image: erlang:latest
+image: erlang:19
 
 build_job:
   stage: build
   script:
     - rebar3 get-deps
     - rebar3 compile
+  except:
+    - tags
 
 release_job:
   stage: release
