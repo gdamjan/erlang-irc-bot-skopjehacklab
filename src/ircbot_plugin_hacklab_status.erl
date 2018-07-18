@@ -121,13 +121,13 @@ status_notice(IrcBot, Status) ->
 
 status_loop(LastStatus, ReqHeaders, Callback) ->
     Url = <<"https://hacklab.ie.mk/sub?id=status">>,
-    Options = [ {recv_timeout, 120000}, {follow_redirect, true} ],
+    Options = [ {recv_timeout, 120000}, {follow_redirect, false} ],
     case hackney:get(Url, ReqHeaders, <<>>, Options) of
         {ok, 200, RespHeaders, Ref} ->
             H = hackney_headers_new:from_list(RespHeaders),
-            LastModified = hackney_headers_new:get_value(<<"Last-Modified">>, H),
-            Etag = hackney_headers_new:get_value(<<"Etag">>, H),
-            NextHeaders = [ {if_modified_since, LastModified}, {if_none_match, Etag} ],
+            LastModified = hackney_headers_new:get_value(<<"last-modified">>, H),
+            Etag = hackney_headers_new:get_value(<<"etag">>, H),
+            NextHeaders = [ {<<"if-modified-since">>, LastModified}, {<<"if-none-match">>, Etag} ],
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
             hackney:close(Ref),
             case Body of
