@@ -1,0 +1,16 @@
+name: Erlang CI
+
+on: [push]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: rebar get-deps
+    - name: Compile
+      run: rebar compile
