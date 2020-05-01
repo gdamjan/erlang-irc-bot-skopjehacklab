@@ -1,7 +1,7 @@
 This is a skopjehacklab instance of the erlang irc bot
 ======================================================
 
-![Erlang CI](https://github.com/gdamjan/erlang-irc-bot-skopjehacklab/workflows/Erlang%20CI/badge.svg)
+[![Erlang CI](https://github.com/gdamjan/erlang-irc-bot-skopjehacklab/workflows/Erlang%20CI/badge.svg)](https://github.com/gdamjan/erlang-irc-bot-skopjehacklab/actions?query=workflow%3A%22Erlang+CI%22)
 
 This is the bot running as `erlbot--` on freenode and connected to several
 channels such as #lugola, #nsnd, #razmjenavjestina, etc… It has some more plugins
@@ -16,7 +16,7 @@ Then copy `settings.cfg.sample` to `settings.cfg`, edit it to set passwords and 
     ./run.sh
 
 
-Note: only Erlang 18 and up will be tested.
+Note: Erlang 20 works. Older versions won't be tested. Newer currently don't seem to work cause of "tupple calls".
 
 
 Running a release as systemd service
