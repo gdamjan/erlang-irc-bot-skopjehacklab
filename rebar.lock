@@ -6,7 +6,7 @@
  {<<"idna">>,{pkg,<<"idna">>,<<"6.0.0">>},1},
  {<<"ircbot">>,
   {git,"https://github.com/gdamjan/erlang-irc-bot.git",
-       {ref,"e5691fa1a9ab05549bd7da34bbc66e3ce1b30a07"}},
+       {ref,"cdc23b62dd8f8136c7b407a61996b00746f641ef"}},
   0},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.10.0">>},0},
  {<<"lager">>,{pkg,<<"lager">>,<<"3.8.0">>},0},
