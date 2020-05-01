@@ -1,7 +1,7 @@
 This is a skopjehacklab instance of the erlang irc bot
 ======================================================
 
-[![Build Status](https://app.snap-ci.com/gdamjan/erlang-irc-bot-skopjehacklab/branch/master/build_image)](https://app.snap-ci.com/gdamjan/erlang-irc-bot-skopjehacklab/branch/master)
+![Erlang CI](https://github.com/gdamjan/erlang-irc-bot-skopjehacklab/workflows/Erlang%20CI/badge.svg)
 
 This is the bot running as `erlbot--` on freenode and connected to several
 channels such as #lugola, #nsnd, #razmjenavjestina, etc… It has some more plugins
@@ -32,6 +32,7 @@ That will create a directory in `_build/default/rel/` named `ircbot` with the re
 
     sudo cp -r _build/default/rel/ircbot /opt/erlbot
 
+See [Github Releases](https://github.com/gdamjan/erlang-irc-bot-skopjehacklab/releases) for pre-built erlang releases.
 
 An extensible ircbot written in Erlang
 ======================================
