@@ -53,7 +53,8 @@ log_topic(Db, Sender, Channel, Topic) ->
     ]},
     catch couchbeam:save_doc(Db, Doc).
 
-log_out(Db, Me, Channel, Text) ->
+%%% FIXME: log outgoing messages too
+log_out(_Db, _Me, _Channel, _Text) ->
     ok.
 
 handle_event(Msg, Db) ->

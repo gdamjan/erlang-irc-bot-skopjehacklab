@@ -67,11 +67,11 @@ recurse_newnames([], _, D, _) -> D;
 recurse_newnames([X|XS], N, D, Channel) ->
     recurse_newnames(XS, N+1,
     dict:update(remove_any_status(string:to_lower(X)),
-        fun ([{_Timestamp, _Channel, _Event}]) -> [{Timestamp = erlang:system_time() / 1000000000, Channel, "i"}] end,
-             [{Timestamp = erlang:system_time() / 1000000000, Channel, "i"}], D),
+        fun ([{_Timestamp, _Channel, _Event}]) -> [{_Timestamp = erlang:system_time() / 1000000000, Channel, "i"}] end,
+             [{_Timestamp = erlang:system_time() / 1000000000, Channel, "i"}], D),
     Channel).
 
-register_newnames(Ref,Channel, Names) ->
+register_newnames(_Ref, Channel, Names) ->
     L = string:tokens(binary_to_list(Names), " "),
     {ok, recurse_newnames(L, 0, dict:new(), Channel)}.
 
