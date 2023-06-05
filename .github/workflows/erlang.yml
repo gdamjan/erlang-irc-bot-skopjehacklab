@@ -2,9 +2,9 @@ name: Erlang CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -21,4 +21,4 @@ jobs:
 
     strategy:
       matrix:
-        erlang: [21, 22, 23]
+        erlang: [24, 25, 26]
