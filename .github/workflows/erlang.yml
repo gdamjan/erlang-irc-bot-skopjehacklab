@@ -21,4 +21,4 @@ jobs:
 
     strategy:
       matrix:
-        erlang: [24, 25]
+        erlang: [24, 25, 26]
