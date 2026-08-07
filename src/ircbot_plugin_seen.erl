@@ -55,13 +55,11 @@ seen(State, Ref, Channel, Nick, Sender) ->
     Ref:privmsg(["#", Channel], Msg),
     {ok, State}.
 
-remove_any_status([X|XS]) ->
-    if
-        (X == $@) or (X == $+) or (X == $%) ->
-            XS;
-        true ->
-            [X] ++ XS
-    end.
+%%% strips IRC channel membership prefixes from nicks. In a  353 RPL_NAMREPLY  response, nicks are prefixed with their status symbol —  @  (op),
+%%%  +  (voice), or  %  (halfop) — so  "@alice"  means alice is an op.
+%%% This function removes that leading character so you store the bare nick  "alice"  as the key.
+remove_any_status([StatusSymbol|Nick]) when StatusSymbol =:= $@; StatusSymbol =:= $+; StatusSymbol =:= $% -> Nick;
+remove_any_status(Nick) -> Nick.
 
 register_newnames(_Ref, Channel, Names) ->
     L = string:tokens(binary_to_list(Names), " "),
