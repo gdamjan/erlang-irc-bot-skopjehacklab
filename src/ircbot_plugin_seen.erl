@@ -63,17 +63,14 @@ remove_any_status([X|XS]) ->
             [X] ++ XS
     end.
 
-recurse_newnames([], _, D, _) -> D;
-recurse_newnames([X|XS], N, D, Channel) ->
-    recurse_newnames(XS, N+1,
-    dict:update(remove_any_status(string:to_lower(X)),
-        fun ([{_Timestamp, _Channel, _Event}]) -> [{_Timestamp = erlang:system_time() / 1000000000, Channel, "i"}] end,
-             [{_Timestamp = erlang:system_time() / 1000000000, Channel, "i"}], D),
-    Channel).
-
 register_newnames(_Ref, Channel, Names) ->
     L = string:tokens(binary_to_list(Names), " "),
-    {ok, recurse_newnames(L, 0, dict:new(), Channel)}.
+    D = lists:foldl(fun(X, Acc) ->
+        Key = remove_any_status(string:to_lower(X)),
+        Entry = [{erlang:system_time() / 1000000000, Channel, "i"}],
+        dict:update(Key, fun(_) -> Entry end, Entry, Acc)
+    end, dict:new(), L),
+    {ok, D}.
 
 handle_nickchange(State, Old, New) ->
     Timestamp = erlang:system_time() / 1000000000,
