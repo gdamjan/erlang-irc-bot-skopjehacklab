@@ -10,10 +10,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     container:
-      image: erlang:20
+      image: erlang:29
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
 
     - name: Build a production release
       run: |
@@ -22,12 +22,10 @@ jobs:
         tar cf ircbot-release.tgz -C _build/full/rel/ .
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: ircbot-release.tgz
         prerelease: true
         draft: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
