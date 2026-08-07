@@ -124,9 +124,9 @@ status_loop(LastStatus, ReqHeaders, Callback) ->
     Options = [ {recv_timeout, 120000}, {follow_redirect, false} ],
     case hackney:get(Url, ReqHeaders, <<>>, Options) of
         {ok, 200, RespHeaders, Ref} ->
-            H = hackney_headers_new:from_list(RespHeaders),
-            LastModified = hackney_headers_new:get_value(<<"last-modified">>, H),
-            Etag = hackney_headers_new:get_value(<<"etag">>, H),
+            H = hackney_headers:from_list(RespHeaders),
+            LastModified = hackney_headers:get_value(<<"last-modified">>, H),
+            Etag = hackney_headers:get_value(<<"etag">>, H),
             NextHeaders = [ {<<"if-modified-since">>, LastModified}, {<<"if-none-match">>, Etag} ],
             {ok, Body} = hackney:body(Ref, ?MAXBODY),
             hackney:close(Ref),
