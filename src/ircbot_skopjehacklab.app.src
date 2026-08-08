@@ -1,6 +1,6 @@
 {application, ircbot_skopjehacklab,
  [{description, "IrcBot for the Skopje Hacklab"},
-  {vsn, "1.0.0"},
+  {vsn, git},
   {modules, []},
   {registered, []},
   {applications, [kernel,
@@ -12,5 +12,3 @@
   {env, []}
  ]
 }.
-
-
