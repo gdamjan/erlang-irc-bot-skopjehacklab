@@ -20,5 +20,6 @@ jobs:
       run: rebar3 do eunit, ct
 
     strategy:
+      fail-fast: false
       matrix:
         erlang: [27, 28, 29]
