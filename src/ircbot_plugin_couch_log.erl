@@ -41,7 +41,7 @@ log_message(Db, Sender, Channel, Message) ->
          {<<"message">>, ircbot_lib:sanitize_utf8(Message)},
          {<<"timestamp">>,  Timestamp}
     ]},
-    catch couchbeam:save_doc(Db, Doc).
+    try couchbeam:save_doc(Db, Doc) catch _:_ -> ok end.
 
 log_topic(Db, Sender, Channel, Topic) ->
     Timestamp = erlang:system_time() / 1000000000,
@@ -51,7 +51,7 @@ log_topic(Db, Sender, Channel, Topic) ->
          {<<"topic">>, Topic},
          {<<"timestamp">>,  Timestamp}
     ]},
-    catch couchbeam:save_doc(Db, Doc).
+    try couchbeam:save_doc(Db, Doc) catch _:_ -> ok end.
 
 %%% FIXME: log outgoing messages too
 log_out(_Db, _Me, _Channel, _Text) ->
