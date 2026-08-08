@@ -1,7 +1,9 @@
+%%-*- mode: erlang -*-
+
 {connection, [
-    {name, {local, freenode}},
-    {nickname, "CHANGE ME"},
-    {server,   {"chat.freenode.net", 6667}},
+    {name, {local, libera}},
+    {nickname, "erlbot-test"},
+    {server,   {"irc.libera.chat", 6667}},
     {channels, [
         "#lugola",
         "#razmjenavjestina",
@@ -27,7 +29,6 @@
         {'ircbot_plugin_roll', []},
         {'ircbot_plugin_ping', []},
         {'ircbot_plugin_help', []},
-        {'ircbot_plugin_prisutni', []},
         {'ircbot_plugin_kluc', [<<"ircbot">>, [{basic_auth, {<<"ircbot">>, <<"SEKRETS ALL THE TIEM">>}}]]},
         {'ircbot_plugin_tell', [<<"ircbot">>, [{basic_auth, {<<"ircbot">>, <<"SEKRETS ALL THE TIEM">>}}]]},
         {'ircbot_plugin_seen', []},
