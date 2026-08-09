@@ -7,9 +7,9 @@ DynamicUser=yes
 RuntimeDirectory=erlbot
 WorkingDirectory=/run/erlbot
 Environment=HOME=/run/erlbot
-Environment=CONF=/etc/erlbot/settings.cfg
+Environment=CONFIG_FILE=/etc/erlbot/settings.cfg
 Environment=SNAME=erlbot
-ExecStart=/opt/erlbot/bin/ircbot -- -conf $CONF
+ExecStart=/opt/erlbot/bin/ircbot foreground
 Restart=always
 SyslogIdentifier=erlbot
 

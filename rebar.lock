@@ -6,7 +6,7 @@
  {<<"idna">>,{pkg,<<"idna">>,<<"7.1.0">>},1},
  {<<"ircbot">>,
   {git,"https://github.com/gdamjan/erlang-irc-bot.git",
-       {ref,"978bb1b0df5117160887ce5985ac7935de0bf603"}},
+       {ref,"42733195ed538044ac9570e9c7e02c81b9a6095d"}},
   0},
  {<<"mimerl">>,{pkg,<<"mimerl">>,<<"1.5.0">>},1},
  {<<"mochiweb">>,{pkg,<<"mochiweb">>,<<"3.4.0">>},0},
