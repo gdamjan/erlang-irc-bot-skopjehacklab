@@ -26,7 +26,7 @@ handle_event(Msg, State) ->
                     R = rand:uniform()
             end,
             RB = list_to_binary(io_lib:format("~p",[R])),
-            Ref:privmsg(<<"#",Channel/binary>>, <<"I'm rolling a ", RB/binary>>);
+            ircbot_api:privmsg(<<"#",Channel/binary>>, <<"I'm rolling a ", RB/binary>>, Ref);
         _ ->
             ok
     end,

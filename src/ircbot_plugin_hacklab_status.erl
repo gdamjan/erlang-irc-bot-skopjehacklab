@@ -63,7 +63,7 @@ doit(IrcBot, Channel) ->
     end,
 
     Response = hackney_bstr:join([Status, Temperature, Devices, <<"http://status.spodeli.org/"/utf8>>], <<" • "/utf8>>),
-    IrcBot:privmsg(Channel, Response)
+    ircbot_api:privmsg(Channel, Response, IrcBot)
   end).
 
 get_status() ->
@@ -117,7 +117,7 @@ influx_request_values(StatusCode, Ref) ->
   end.
 
 status_notice(IrcBot, Status) ->
-    IrcBot:notice("#lugola", Status).
+    ircbot_api:notice("#lugola", Status, IrcBot).
 
 status_loop(LastStatus, ReqHeaders, Callback) ->
     Url = <<"https://hacklab.ie.mk/sub?id=status">>,

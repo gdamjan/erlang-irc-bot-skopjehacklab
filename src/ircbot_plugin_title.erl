@@ -69,7 +69,7 @@ fetch_last(State, Ref, Channel) ->
 fetch(Url, Ref, Channel) ->
     spawn(fun() ->
         Response = fetcher(Url),
-        Ref:privmsg(Channel, Response)
+        ircbot_api:privmsg(Channel, Response, Ref)
     end).
 
 fetcher(Url) ->

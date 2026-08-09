@@ -38,7 +38,7 @@ handle_event(Msg, Db) ->
             spawn(fun () ->
                 ViewValue = get_latest_state(Db),
                 Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- ViewValue >>,
-                Ref:privmsg(Channel, [<<"Клучеви имаат: "/utf8>>, Response])
+                ircbot_api:privmsg(Channel, [<<"Клучеви имаат: "/utf8>>, Response], Ref)
             end),
             {ok, Db};
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, Channel, <<"!клучеви "/utf8, Rest/binary>>]} ->
@@ -55,7 +55,7 @@ handle_event(Msg, Db) ->
                 ]},
                 couchbeam:save_doc(Db, Doc),
                 Response = << <<Person/binary, "(", Key/binary, ") ">> || {Key, Person} <- NewValue >>,
-                Ref:notice(Channel, Response)
+                ircbot_api:notice(Channel, Response, Ref)
             end),
             {ok, Db};
         _ ->

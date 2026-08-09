@@ -52,7 +52,7 @@ seen(State, Ref, Channel, Nick, Sender) ->
         false ->
             Msg = [Sender, ", sorry, I've never seen ", Nick, "."]
     end,
-    Ref:privmsg(["#", Channel], Msg),
+    ircbot_api:privmsg(["#", Channel], Msg, Ref),
     {ok, State}.
 
 %%% strips IRC channel membership prefixes from nicks. In a  353 RPL_NAMREPLY  response, nicks are prefixed with their status symbol —  @  (op),

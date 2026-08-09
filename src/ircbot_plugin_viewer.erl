@@ -18,7 +18,7 @@ handle_event(Msg, State) ->
             case ircbot_lib:url_match(Text, "\\.doc|\\.pps|\\.tiff|\\.tif") of
                 {match, [Url]} ->
                     Url1 = ircbot_lib:escape_uri(Url),
-                    Ref:notice(<<"#",Channel/binary>>, <<"http://docs.google.com/viewer?url=", Url1/binary>>),
+                    ircbot_api:notice(<<"#",Channel/binary>>, <<"http://docs.google.com/viewer?url=", Url1/binary>>, Ref),
                     {ok, State};
                 _ ->
                     {ok, State}

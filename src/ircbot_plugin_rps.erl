@@ -11,19 +11,19 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!rock">>]} ->
-            Ref:privmsg(<<"#",Channel/binary>>, play(Nick, rock)),
+            ircbot_api:privmsg(<<"#",Channel/binary>>, play(Nick, rock), Ref),
             {ok, State};
        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!paper">>]} ->
-            Ref:privmsg(<<"#",Channel/binary>>, play(Nick, paper)),
+            ircbot_api:privmsg(<<"#",Channel/binary>>, play(Nick, paper), Ref),
             {ok, State};
        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!scissors">>]} ->
-            Ref:privmsg(<<"#",Channel/binary>>, play(Nick, scissors)),
+            ircbot_api:privmsg(<<"#",Channel/binary>>, play(Nick, scissors), Ref),
             {ok, State};
        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!spock">>]} ->
-            Ref:privmsg(<<"#",Channel/binary>>, play(Nick, spock)),
+            ircbot_api:privmsg(<<"#",Channel/binary>>, play(Nick, spock), Ref),
             {ok, State};
        {in, Ref, [Nick, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!lizard">>]} ->
-            Ref:privmsg(<<"#",Channel/binary>>, play(Nick, lizard)),
+            ircbot_api:privmsg(<<"#",Channel/binary>>, play(Nick, lizard), Ref),
             {ok, State};
         _ ->
             {ok, State}

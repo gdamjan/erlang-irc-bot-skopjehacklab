@@ -29,7 +29,7 @@ terminate(_Args, _State) -> ok.
 fetch(Query, Ref, Channel) ->
     spawn(fun() ->
           Response = gfl(Query),
-          Ref:privmsg(Channel, Response)
+          ircbot_api:privmsg(Channel, Response, Ref)
     end).
 
 gfl(Query) ->

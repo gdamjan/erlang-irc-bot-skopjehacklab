@@ -20,7 +20,7 @@ handle_event(Msg, State) ->
             Url = <<"http://hacklab.ie.mk/api/blink">>,
             spawn(fun() ->
                 Answer = fetcher(Url),
-                Ref:notice(Nick, Answer)
+                ircbot_api:notice(Nick, Answer, Ref)
             end),
             {ok, State};
         _ ->

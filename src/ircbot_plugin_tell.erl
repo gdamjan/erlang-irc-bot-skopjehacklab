@@ -53,7 +53,7 @@ reminder(Ref, Nick, Db) ->
                     Msg = couchbeam_doc:get_value(<<"message">>, Doc),
                     Timestamp = couchbeam_doc:get_value(<<"timestamp">>, Doc),
                     Response = [ircbot_common:fancy_time_diff(Timestamp, Now), " ", From, " on ", Channel, ": ", Msg],
-                    Ref:privmsg(Nick, Response),
+                    ircbot_api:privmsg(Nick, Response, Ref),
                     couchbeam:delete_doc(Db, Doc)
                   end, ViewResults).
 
@@ -63,12 +63,12 @@ handle_event(Msg, Db) ->
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!tell ",Rest/binary>>]} ->
             spawn(fun() ->
                           Response = remember(Channel, Sender, Rest, Db),
-                          Ref:privmsg(Sender, Response)
+                          ircbot_api:privmsg(Sender, Response, Ref)
                   end);
         {in, Ref, [Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, <<"!ask ",Rest/binary>>]} ->
             spawn(fun() ->
                           Response = remember(Channel, Sender, Rest, Db),
-                          Ref:privmsg(Sender, Response)
+                          ircbot_api:privmsg(Sender, Response, Ref)
                   end);
 
         {in, Ref, [Sender, _Name, <<"JOIN">>, <<"#",_Channel/binary>>]} ->
