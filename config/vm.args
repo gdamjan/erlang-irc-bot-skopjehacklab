@@ -1,5 +1,6 @@
--noshell
--noinput
--sasl errlog_type error
+-sname ircbot
+
+-setcookie ircbot_cookie
+
 +K true
--start_epmd false
++A30
